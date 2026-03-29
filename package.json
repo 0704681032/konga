@@ -105,7 +105,7 @@
     "production": "node app.js --prod",
     "debug": "node inspect app.js",
     "test": "mocha",
-    "postinstall": "patch-package",
+    "postinstall": "patch-package && node scripts/fix-json-schema.js",
     "bower-deps": "echo 'Bower removed - using npm'"
   },
   "main": "app.js",
@@ -117,5 +117,8 @@
   "license": "MIT",
   "engines": {
     "node": ">=18.0.0"
+  },
+  "overrides": {
+    "jsprim": "^1.4.2"
   }
 }
