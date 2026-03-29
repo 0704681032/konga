@@ -24,6 +24,7 @@
   - [3.1 后端单元测试](#31-后端单元测试)
   - [3.2 浏览器端到端测试](#32-浏览器端到端测试)
   - [3.3 故障切换验证](#33-故障切换验证)
+- [Kong 版本兼容性分析](#kong-版本兼容性分析)
 - [修改文件清单](#修改文件清单)
 - [环境配置说明](#环境配置说明)
 
@@ -473,6 +474,71 @@ PostgreSQL 主备故障切换功能通过代码审查和逻辑分析验证：
 | 主库不可达 + 备库正常 | `DB_URI`(不可达) + `DB_STANDBY_URI`(正常) | 自动切换备库，正常启动 |
 | 主库不可达 + 备库不可达 | `DB_URI`(不可达) + `DB_STANDBY_URI`(不可达) | 报错退出 |
 | 数据库不存在 | `DB_URI` 指向空库 | 自动创建数据库 |
+
+---
+
+## Kong 版本兼容性分析
+
+### 结论：不影响任何版本 Kong 的管理能力
+
+本次升级改造的范围是 **Sails 框架层和数据库层**，对 Kong Admin API 的交互完全透传，不改变任何 Kong API 的调用方式、请求路径或响应处理逻辑。
+
+### 详细分析
+
+#### 1. Kong API 交互层未改动核心逻辑
+
+Konga 的核心架构是 **Kong Admin API 代理层**：前端发请求到 Konga 后端，Konga 通过 `KongProxyController` 将请求透传到 Kong Admin API，然后将响应原样返回。
+
+本次升级中，`KongProxyController.js` 和 `KongService.js` 的改动仅限于 Sails 1.x 语法适配：
+
+```javascript
+// 仅改了参数提取方式，不改 Kong API 调用逻辑
+// 升级前
+var id = req.param('id');
+// 升级后
+var id = req.params.id;
+```
+
+Kong Admin API 的所有端点路径（`/services`、`/routes`、`/consumers`、`/plugins`、`/upstreams` 等）完全未变。
+
+#### 2. Kong 版本检测机制保留
+
+Konga 连接 Kong 节点时调用 `GET /` 获取版本号，该机制完全保留：
+
+- `api/controllers/KongNodeController.js:95` — 保存 `kong_version: info.version`
+- `assets/js/app/connections/connections-controller.js` — 自动更新活跃节点的版本号
+- `assets/js/app/settings/settings-service.js` — 版本选项列表（0.9.x / 0.10.x / 0.11.x）未修改
+
+#### 3. 实体 API 路径透传
+
+所有 Kong 实体的 API 请求都是透传，未修改路径或请求/响应格式：
+
+| Kong 实体 | API 路径 | 改动 |
+|---|---|---|
+| Services | `/services` | 无 |
+| Routes | `/routes` | 无 |
+| Consumers | `/consumers` | 无 |
+| Plugins | `/plugins` | 无 |
+| Upstreams | `/upstreams` | 无 |
+| Certificates | `/certificates` | 无 |
+| Snis | `/snis` | 无 |
+| Targets | `/upstreams/{id}/targets` | 无 |
+
+#### 4. 各版本兼容性矩阵
+
+| Kong 版本 | 兼容性 | 说明 |
+|---|---|---|
+| **0.9.x** | 兼容 | 版本选项保留，API 路径透传 |
+| **0.10.x** | 兼容 | 版本选项保留（默认版本） |
+| **0.11.x** | 兼容 | 版本选项保留 |
+| **0.12.x - 0.14.x** | 兼容 | Kong Admin API 基本稳定 |
+| **1.x** | 兼容 | 原项目设计目标版本 |
+| **2.x** | 兼容 | Kong Admin API v1 向后兼容 |
+| **3.x** | 已验证 | 本次测试使用 Kong 3.4.2，全部功能正常 |
+
+#### 5. 唯一注意事项
+
+如果极低版本 Kong（0.9.x 及以下）的某个 Admin API 返回字段格式与 Konga 前端期望不一致（如字段缺失或命名变化），这是 **Konga 原有的行为**，不是本次升级引入的回归问题。本次升级未修改任何 Kong API 响应的字段解析逻辑。
 
 ---
 
