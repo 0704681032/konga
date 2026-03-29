@@ -106,7 +106,8 @@ function scan(dir, depth) {
         console.log('fix-json-schema: 已修补为 0.4.0');
       }
     } catch (e) {
-      // package.json 解析失败，跳过此目录
+      // package.json 解析失败，打印错误信息
+      console.log('fix-json-schema: 解析 ' + pkgFile + ' 失败: ' + e.message);
     }
   }
 
@@ -124,7 +125,8 @@ function scan(dir, depth) {
       }
     }
   } catch (e) {
-    // 权限不足或目录不存在，跳过
+    // 权限不足或目录不存在，打印错误信息
+    console.log('fix-json-schema: 扫描目录 ' + dir + ' 失败: ' + e.message);
   }
 }
 
