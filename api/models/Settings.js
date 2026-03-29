@@ -20,6 +20,18 @@ var defaultModel = _.merge(_.cloneDeep(require('../base/Model')), {
     data: {
       type: 'json'
     },
+
+    // Timestamp fields
+    createdAt: {
+      type: 'number',
+      columnType: 'bigint',
+      autoCreatedAt: true
+    },
+    updatedAt: {
+      type: 'number',
+      columnType: 'bigint',
+      autoUpdatedAt: true
+    }
   },
   seedData: [
     {

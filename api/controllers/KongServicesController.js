@@ -10,21 +10,22 @@ var KongService = require('../services/KongService');
 
 module.exports = _.merge(_.cloneDeep(require('../base/Controller')), {
 
-  listTags: function (req, res) {
-    sails.models.kongservices.find({
-      where: {
-        kong_node_id: req.connection.id
-      },
-      select: ['tags']
-    }, function (err, extras) {
-      if (err) return res.negotiate(err);
+  listTags: async function (req, res) {
+    try {
+      var extras = await sails.models.kongservices.find({
+        where: {
+          kong_node_id: req.connection.id
+        }
+      });
       var tags = [];
       extras.forEach(function (extra) {
         if (extra.tags instanceof Array)
           tags = tags.concat(extra.tags);
       });
       return res.json(_.uniq(tags));
-    })
+    } catch (err) {
+      return res.negotiate(err);
+    }
   },
 
   consumers: async (req,res) => {

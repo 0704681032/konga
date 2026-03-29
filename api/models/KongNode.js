@@ -91,6 +91,18 @@ var defaultModel = _.merge(_.cloneDeep(require('../base/Model')), {
     active: {
       type: 'boolean',
       defaultsTo: false
+    },
+
+    // Timestamp fields
+    createdAt: {
+      type: 'number',
+      columnType: 'bigint',
+      autoCreatedAt: true
+    },
+    updatedAt: {
+      type: 'number',
+      columnType: 'bigint',
+      autoUpdatedAt: true
     }
   },
 

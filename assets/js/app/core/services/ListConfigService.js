@@ -314,7 +314,7 @@
             },
             {
               title: 'created',
-              column: 'createdAt',
+              column: 'id',
               sortable: true,
             },
           ],
@@ -434,12 +434,12 @@
             },
             {
               title: 'created',
-              column: 'createdAt',
+              column: 'id',
               sortable: true,
             },
             {
               title: 'updated',
-              column: 'updatedAt',
+              column: 'id',
               sortable: true,
             },
             {
@@ -476,7 +476,7 @@
             },
             {
               title: 'created at',
-              column: 'createdAt',
+              column: 'id',
               sortable: true,
               inTitle: true
             }
@@ -494,7 +494,7 @@
             },
             {
               title: 'created at',
-              column: 'createdAt',
+              column: 'id',
               sortable: true,
               inTitle: true
             }
@@ -616,7 +616,7 @@
             },
             {
               title: 'Login time',
-              column: 'createdAt',
+              column: 'id',
               class: 'col-xs-4',
               searchable: false,
               sortable: true,
@@ -703,7 +703,7 @@
               itemsPerPageOptions: [10, 25, 50, 100],
               currentPage: 1,
               sort: {
-                column: 'created_at',
+                column: 'id',
                 direction: true,
               },
               filters: {

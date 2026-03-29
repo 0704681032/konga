@@ -77,7 +77,7 @@
                         NodeModel
                       ) {
                         return NodeModel.load({
-                          sort: 'createdAt DESC'
+                          sort: 'id DESC'
                         });
                       }
                     ]

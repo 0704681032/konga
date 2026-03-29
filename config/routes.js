@@ -143,6 +143,28 @@ module.exports.routes = {
   'GET /api/settings': 'SettingsController.find',
   'GET /api/settings/integrations': 'SettingsController.getIntegrations',
 
+  // User routes - override blueprint to handle sort properly
+  'GET /api/user': 'UserController.find',
+  'GET /api/user/:id': 'UserController.findOne',
+  'POST /api/user': 'UserController.create',
+  'PUT /api/user/:id': 'UserController.update',
+  'DELETE /api/user/:id': 'UserController.destroy',
+  'GET /api/user/count': 'UserController.count',
+
+  // Snapshot routes
+  'GET /api/snapshot': 'SnapshotController.find',
+  'GET /api/snapshot/:id': 'SnapshotController.findOne',
+  'GET /api/snapshot/count': 'SnapshotController.count',
+  'DELETE /api/snapshot/:id': 'SnapshotController.destroy',
+
+  // SnapshotSchedule routes
+  'GET /api/snapshotschedule': 'SnapshotScheduleController.find',
+  'GET /api/snapshotschedule/:id': 'SnapshotScheduleController.findOne',
+  'POST /api/snapshotschedule': 'SnapshotScheduleController.create',
+  'PUT /api/snapshotschedule/:id': 'SnapshotScheduleController.update',
+  'DELETE /api/snapshotschedule/:id': 'SnapshotScheduleController.destroy',
+  'GET /api/snapshotschedule/count': 'SnapshotScheduleController.count',
+
 
   /**
    * Fix Kong 1.x Listing routes

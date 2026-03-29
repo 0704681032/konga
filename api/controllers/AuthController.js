@@ -219,9 +219,9 @@ var AuthController = {
    * @param   {Response}  response    Response object
    */
   logout: function logout(request, response) {
-    request.logout();
-
-    response.status(200).json(true);
+    request.logout(function() {
+      response.status(200).json(true);
+    });
   },
 
   /**

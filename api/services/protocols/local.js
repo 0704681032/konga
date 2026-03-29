@@ -78,26 +78,32 @@ exports.login = function login(request, identifier, password, next) {
     query.username = identifier;
   }
 
+  sails.log("Passport:Policy:local:login called with identifier:", identifier);
+
   sails.models.user
     .findOne(query)
     .populate('node')
     .exec(function onExec(error, user) {
       if (error) {
+        sails.log("Passport:Policy:local:findUser:error =>", error);
         next(error);
       } else if (!user) {
+        sails.log("Passport:Policy:local:findUser: no user found");
         next(null, false);
       } else {
-        sails.log("Passport:Policy:local:findUser =>",user)
+        sails.log("Passport:Policy:local:findUser =>", user.username, "admin:", user.admin);
         sails.models.passport
           .findOne({
             protocol: 'local',
             user: user.id
           })
           .exec(function onExec(error, passport) {
-            sails.log("Passport:Policy:local:findUserPassport:error =>",error)
-            sails.log("Passport:Policy:local:findUserPassport =>",passport)
+            sails.log("Passport:Policy:local:findUserPassport:error =>", error);
+            sails.log("Passport:Policy:local:findUserPassport =>", passport ? "found" : "not found");
             if (passport) {
               sails.models.passport.validatePassword(passport, password, function callback(error, response) {
+                sails.log("Passport:Policy:local:validatePassword:error =>", error);
+                sails.log("Passport:Policy:local:validatePassword:response =>", response);
                 if (error) {
                   next(error);
                 } else if (!response) {

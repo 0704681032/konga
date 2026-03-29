@@ -32,7 +32,7 @@
         };
 
         $scope.sort = {
-          column: 'createdAt',
+          column: 'id',
           direction: false,
         };
 

@@ -1,6 +1,7 @@
 'use strict';
 
 var _ = require('lodash');
+var passport = require('passport');
 
 /**
  * Policy to check that request is done via authenticated user. This policy uses existing
@@ -27,19 +28,12 @@ module.exports = function authenticated(request, response, next) {
     return next();
   }
 
-  /**
-   * Helper function to process possible error and actual token after it is decoded.
-   *
-   * @param   {{}}      error Possible error
-   * @param   {Number}  token Decoded JWT token data
-   * @returns {*}
-   */
-  var verify = function verify(error, token) {
-    if (!(_.isEmpty(error) && token !== -1)) {
-      return response.status(401).json({message: 'Given authorization token is not valid', logout: true});
-    } else {
-      // Store user id to request object
-      request.token = token;
+  // Initialize Passport first to ensure session methods are available
+  passport.initialize()(request, response, function() {
+    // Check if user is authenticated via Passport session
+    if (request.isAuthenticated && request.isAuthenticated() && request.user) {
+      // Store user id to request object from session
+      request.token = request.user.id;
 
       // We delete the token from query and body to not mess with blueprints
       request.query && delete request.query.token;
@@ -47,12 +41,34 @@ module.exports = function authenticated(request, response, next) {
 
       return next();
     }
-  };
 
-  // Get and verify JWT via service
-  try {
-    sails.services.token.getToken(request, verify, true);
-  } catch (error) {
-    return response.status(401).json({message: error.message, logout: true});
-  }
+    /**
+     * Helper function to process possible error and actual token after it is decoded.
+     *
+     * @param   {{}}      error Possible error
+     * @param   {Number}  token Decoded JWT token data
+     * @returns {*}
+     */
+    var verify = function verify(error, token) {
+      if (!(_.isEmpty(error) && token !== -1)) {
+        return response.status(401).json({message: 'Given authorization token is not valid', logout: true});
+      } else {
+        // Store user id to request object
+        request.token = token;
+
+        // We delete the token from query and body to not mess with blueprints
+        request.query && delete request.query.token;
+        request.body && delete request.body.token;
+
+        return next();
+      }
+    };
+
+    // Get and verify JWT via service
+    try {
+      sails.services.token.getToken(request, verify, true);
+    } catch (error) {
+      return response.status(401).json({message: error.message, logout: true});
+    }
+  });
 };

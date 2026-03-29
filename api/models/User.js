@@ -15,6 +15,7 @@ var defSeedData = require('../../config/default-seed-data.js');
 var defaultModel = _.merge(_.cloneDeep(require('../base/Model')), {
   tableName: "konga_users",
   primaryKey: 'id',
+  schema: false, // Allow flexible attributes for sorting
   attributes: {
     id: {
       type: 'number',
@@ -65,6 +66,18 @@ var defaultModel = _.merge(_.cloneDeep(require('../base/Model')), {
     passports: {
       collection: 'Passport',
       via: 'user'
+    },
+
+    // Timestamp fields
+    createdAt: {
+      type: 'number',
+      columnType: 'bigint',
+      autoCreatedAt: true
+    },
+    updatedAt: {
+      type: 'number',
+      columnType: 'bigint',
+      autoUpdatedAt: true
     },
   },
 

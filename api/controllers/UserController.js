@@ -10,6 +10,50 @@ var _ = require('lodash');
  */
 module.exports = _.merge(_.cloneDeep(require('../base/Controller')), {
 
+    find: function(req, res) {
+        var params = req.query || {};
+
+        // Build query
+        var query = sails.models.user.find();
+
+        // Apply where clause if provided
+        if (params.where) {
+            try {
+                var where = typeof params.where === 'string' ? JSON.parse(params.where) : params.where;
+                query.where(where);
+            } catch (e) {
+                // Ignore parse errors
+            }
+        }
+
+        // Apply limit
+        if (params.limit) {
+            query.limit(parseInt(params.limit, 10));
+        }
+
+        // Apply skip
+        if (params.skip) {
+            query.skip(parseInt(params.skip, 10));
+        }
+
+        // Apply sort - use id DESC as default since createdAt may not exist
+        if (params.sort) {
+            // If sorting by createdAt, use id instead since createdAt may not exist in existing data
+            var sort = params.sort;
+            if (sort.includes('createdAt')) {
+                sort = sort.replace('createdAt', 'id');
+            }
+            query.sort(sort);
+        } else {
+            query.sort('id DESC');
+        }
+
+        query.exec(function(err, records) {
+            if (err) return res.negotiate(err);
+            return res.ok(records);
+        });
+    },
+
     count: function(req, res) {
         sails.models.user.count({}).exec(function(err, count) {
             if (err) return res.negotiate(err);
@@ -29,9 +73,31 @@ module.exports = _.merge(_.cloneDeep(require('../base/Controller')), {
     },
 
     create: function(req, res) {
-        sails.models.user.create(req.body).meta({fetch: true}).exec(function(err, record) {
+        var userData = _.cloneDeep(req.body);
+        var passportsData = userData.passports;
+        delete userData.passports;
+        delete userData.password_confirmation;
+
+        sails.models.user.create(userData).meta({fetch: true}).exec(function(err, record) {
             if (err) return res.negotiate(err);
-            return res.created(record);
+
+            // Create passport if password provided
+            if (passportsData && passportsData.password) {
+                sails.models.passport.create({
+                    protocol: passportsData.protocol || 'local',
+                    password: passportsData.password,
+                    user: record.id
+                }).exec(function(err2, passport) {
+                    if (err2) {
+                        // Rollback user creation
+                        sails.models.user.destroy({id: record.id}).exec();
+                        return res.negotiate(err2);
+                    }
+                    return res.created(record);
+                });
+            } else {
+                return res.created(record);
+            }
         });
     },
 
@@ -70,6 +136,11 @@ module.exports = _.merge(_.cloneDeep(require('../base/Controller')), {
         // Delete unwanted properties
         delete user.passports
         delete user.password_confirmation
+
+        // Handle node association - frontend may send full node object
+        if (user.node && typeof user.node === 'object') {
+            user.node = user.node.id;
+        }
 
 
         sails.models.user

@@ -34,6 +34,18 @@ var defaultModel = _.merge(_.cloneDeep(require('../base/Model')), {
         data: {
             type: 'json',
             required: true
+        },
+
+        // Timestamp fields
+        createdAt: {
+            type: 'number',
+            columnType: 'bigint',
+            autoCreatedAt: true
+        },
+        updatedAt: {
+            type: 'number',
+            columnType: 'bigint',
+            autoUpdatedAt: true
         }
     },
     afterCreate: function (values, cb) {

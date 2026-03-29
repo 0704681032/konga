@@ -32,6 +32,18 @@ var defaultModel = _.merge(_.cloneDeep(require('../base/Model')), {
         lastRunAt : {
             type : 'string',
             columnType : 'date'
+        },
+
+        // Timestamp fields
+        createdAt: {
+            type: 'number',
+            columnType: 'bigint',
+            autoCreatedAt: true
+        },
+        updatedAt: {
+            type: 'number',
+            columnType: 'bigint',
+            autoUpdatedAt: true
         }
     },
 
