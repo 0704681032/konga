@@ -1,6 +1,6 @@
 'use strict';
 
-var unirest = require("unirest")
+var axios = require("axios")
 var async = require('async')
 var fs = require('fs')
 var path = require('path')
@@ -30,63 +30,81 @@ var KongPluginService = _.merge(_.cloneDeep(require('./KongService')), {
   },
 
   addDynamicSSLPlugin: function (fds, req, res) {
-    return unirest.post(req.connection.kong_admin_url + req.url.replace('/kong', ''))
-      .headers({'Content-Type': 'multipart/form-data'})
-      .field('name', req.body.name)
-      .field('config.only_https', req.body['config.only_https'] || false)
-      .field('config.accept_http_if_already_terminated', req.body['config.accept_http_if_already_terminated'] || false)
-      .attach('config.cert', fds[0])
-      .attach('config.key', fds[1])
-      .end(function (response) {
-        if (response.error) return res.kongError(response)
-        return res.json(response.body)
-      });
+    var FormData = require('form-data');
+    var form = new FormData();
+    form.append('name', req.body.name);
+    form.append('config.only_https', req.body['config.only_https'] || false);
+    form.append('config.accept_http_if_already_terminated', req.body['config.accept_http_if_already_terminated'] || false);
+    form.append('config.cert', fds[0], { filename: 'cert.pem' });
+    form.append('config.key', fds[1], { filename: 'key.pem' });
+
+    axios.post(req.connection.kong_admin_url + req.url.replace('/kong', ''), form, {
+      headers: Object.assign({ 'Content-Type': 'multipart/form-data' }, form.getHeaders())
+    }).then(function (response) {
+      return res.json(response.data);
+    }).catch(function (err) {
+      var response = err.response || err;
+      return res.kongError(response);
+    });
   },
 
   addCertificates: function (fds, req, res) {
-    var request = unirest.post(req.connection.kong_admin_url + req.url.replace('/kong', ''))
+    var FormData = require('form-data');
+    var form = new FormData();
+    var headers = KongService.headers(req.connection);
 
-    request.headers(KongService.headers(req.connection));
-    request.field('snis', req.body['snis'] || '')
-    request.attach('cert', fds[0])
-    request.attach('key', fds[1])
-    return request.end(function (response) {
-      if (response.error) return res.kongError(response)
-      return res.json(response.body)
+    form.append('snis', req.body['snis'] || '');
+    form.append('cert', fds[0], { filename: 'cert.pem' });
+    form.append('key', fds[1], { filename: 'key.pem' });
+
+    axios.post(req.connection.kong_admin_url + req.url.replace('/kong', ''), form, {
+      headers: Object.assign(headers, form.getHeaders())
+    }).then(function (response) {
+      return res.json(response.data);
+    }).catch(function (err) {
+      var response = err.response || err;
+      return res.kongError(response);
     });
   },
 
   updateCertificates: function (fds, req, res) {
-    var request = unirest.patch(req.connection.kong_admin_url + req.url.replace('/kong', ''))
-    request.headers(KongService.headers(req.connection));
+    var FormData = require('form-data');
+    var form = new FormData();
+    var headers = KongService.headers(req.connection);
 
-    request.field('snis', req.body['snis'] || '')
-    if (fds[0]) request.attach('cert', fds[0])
-    if (fds[1]) request.attach('key', fds[1])
+    form.append('snis', req.body['snis'] || '');
+    if (fds[0]) form.append('cert', fds[0], { filename: 'cert.pem' });
+    if (fds[1]) form.append('key', fds[1], { filename: 'key.pem' });
 
-    return request.end(function (response) {
-      if (response.error) return res.kongError(response)
-      return res.json(response.body)
+    axios.patch(req.connection.kong_admin_url + req.url.replace('/kong', ''), form, {
+      headers: Object.assign(headers, form.getHeaders())
+    }).then(function (response) {
+      return res.json(response.data);
+    }).catch(function (err) {
+      var response = err.response || err;
+      return res.kongError(response);
     });
-
   },
 
   addPlugin: function (req, res) {
-    return unirest.post(req.connection.kong_admin_url + req.url.replace('/kong', ''))
-      .send(req.body)
-      .end(function (response) {
-        if (response.error) return res.kongError(response)
-        return res.json(response.body)
+    axios.post(req.connection.kong_admin_url + req.url.replace('/kong', ''), req.body)
+      .then(function (response) {
+        return res.json(response.data)
+      })
+      .catch(function (err) {
+        var response = err.response || err
+        return res.kongError(response)
       })
   },
 
   createCb: function (req, res, cb) {
 
-    unirest.post(req.connection.kong_admin_url + req.url.replace('/kong', ''))
-      .send(req.body)
-      .end(function (response) {
-        if (response.error) return cb(response)
-        return cb(null, response.body)
+    axios.post(req.connection.kong_admin_url + req.url.replace('/kong', ''), req.body)
+      .then(function (response) {
+        return cb(null, response.data)
+      })
+      .catch(function (err) {
+        return cb(err.response || err)
       })
   },
 
@@ -117,76 +135,91 @@ var KongPluginService = _.merge(_.cloneDeep(require('./KongService')), {
   },
 
   retrieve: function (req, res) {
-    unirest.get(req.connection.kong_admin_url + req.url.replace('/kong', ''))
-      .end(function (response) {
-        if (response.error) return res.kongError(response)
-        return res.json(response.body)
+    axios.get(req.connection.kong_admin_url + req.url.replace('/kong', ''))
+      .then(function (response) {
+        return res.json(response.data)
+      })
+      .catch(function (err) {
+        var response = err.response || err
+        return res.kongError(response)
       })
   },
 
   list: function (req, res) {
-    unirest.get(req.connection.kong_admin_url + req.url.replace('/kong', ''))
-      .end(function (response) {
-        if (response.error) return res.kongError(response)
-        return res.json(response.body)
+    axios.get(req.connection.kong_admin_url + req.url.replace('/kong', ''))
+      .then(function (response) {
+        return res.json(response.data)
+      })
+      .catch(function (err) {
+        var response = err.response || err
+        return res.kongError(response)
       })
   },
 
 
   richList: function (req, res) {
     var _this = this;
-    unirest.get(req.connection.kong_admin_url + '/plugins/enabled')
-      .end(function (response) {
-        if (response.error) return res.kongError(response)
-
-        var enabledPlugins = response.body.enabled_plugins;
-
+    axios.get(req.connection.kong_admin_url + '/plugins/enabled')
+      .then(function (response) {
+        var enabledPlugins = response.data.enabled_plugins;
         return res.json(_this.makeGroups(enabledPlugins))
-
       })
-
+      .catch(function (err) {
+        var response = err.response || err
+        return res.kongError(response)
+      })
   },
 
   update: function (req, res) {
-    unirest.patch(req.connection.kong_admin_url + req.url.replace('/kong', ''))
-      .send(req.body)
-      .end(function (response) {
-        if (response.error) return res.kongError(response)
-        return res.json(response.body)
+    axios.patch(req.connection.kong_admin_url + req.url.replace('/kong', ''), req.body)
+      .then(function (response) {
+        return res.json(response.data)
+      })
+      .catch(function (err) {
+        var response = err.response || err
+        return res.kongError(response)
       })
   },
 
   updateCb: function (req, res, cb) {
-    unirest.patch(req.connection.kong_admin_url + req.url.replace('/kong', ''))
-      .send(req.body)
-      .end(function (response) {
-        if (response.error) return cb(response)
-        return cb(null, response.body)
+    axios.patch(req.connection.kong_admin_url + req.url.replace('/kong', ''), req.body)
+      .then(function (response) {
+        return cb(null, response.data)
+      })
+      .catch(function (err) {
+        return cb(err.response || err)
       })
   },
 
   updateOrCreate: function (req, res) {
-    unirest.put(req.connection.kong_admin_url + req.url.replace('/kong', ''))
-      .send(req.body)
-      .end(function (response) {
-        if (response.error) return res.kongError(response)
-        return res.json(response.body)
+    axios.put(req.connection.kong_admin_url + req.url.replace('/kong', ''), req.body)
+      .then(function (response) {
+        return res.json(response.data)
+      })
+      .catch(function (err) {
+        var response = err.response || err
+        return res.kongError(response)
       })
   },
 
   delete: function (req, res) {
-    unirest.delete(req.connection.kong_admin_url + req.url.replace('/kong', ''))
-      .end(function (response) {
-        if (response.error) return res.kongError(response)
-        return res.json(response.body)
+    axios.delete(req.connection.kong_admin_url + req.url.replace('/kong', ''))
+      .then(function (response) {
+        return res.json(response.data)
+      })
+      .catch(function (err) {
+        var response = err.response || err
+        return res.kongError(response)
       })
   },
 
   deleteCb: function (req, res, cb) {
-    unirest.delete(req.connection.kong_admin_url + req.url.replace('/kong', ''))
-      .end(function (response) {
-        if (response.error) return cb(response)
-        return cb(null, response.body)
+    axios.delete(req.connection.kong_admin_url + req.url.replace('/kong', ''))
+      .then(function (response) {
+        return cb(null, response.data)
+      })
+      .catch(function (err) {
+        return cb(err.response || err)
       })
   },
 

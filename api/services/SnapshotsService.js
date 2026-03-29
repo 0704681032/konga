@@ -5,7 +5,7 @@ var _ = require('lodash');
 var semver = require('semver');
 var KongService = require('./KongService');
 var async = require('async');
-var Utils = require('../helpers/utils');
+var Utils = require('./Utils');
 
 module.exports = {
 
@@ -92,7 +92,7 @@ module.exports = {
           kong_node_url: Utils.withoutTrailingSlash(node.kong_admin_url),
           kong_version: node.kong_version,
           data: entities
-        }).exec(function (err, created) {
+        }).meta({fetch: true}).exec(function (err, created) {
           if (err) return reject(err);
           return resolve(created);
         });

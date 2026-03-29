@@ -1,10 +1,10 @@
 'use strict';
 
 module.exports = function deleteUser(request, response, next) {
-  sails.log.verbose(__filename + ':' + __line + ' [Policy.deleteUser() called]');
+  sails.log.verbose('[Policy.deleteUser() called]');
 
 
-  const userId = request.param('id');
+  const userId = request.params.id || request.body.id || request.query.id;
   const myId = request.token;
 
   // Cannot delete own account

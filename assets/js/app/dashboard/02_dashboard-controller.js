@@ -14,7 +14,7 @@
                           SettingsService, NodeModel, $timeout, MessageService, UserModel, UserService, Semver, $http) {
 
 
-          var loadTime = $rootScope.KONGA_CONFIG.info_polling_interval,
+          var loadTime = ($rootScope.KONGA_CONFIG && $rootScope.KONGA_CONFIG.info_polling_interval) || 5000,
               errorCount = 0,
               hasInitiallyLoaded = false,
               loadPromise;

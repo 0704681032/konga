@@ -1,14 +1,12 @@
-FROM node:12.16-alpine
+FROM node:18-alpine
 
 COPY . /app
 
 WORKDIR /app
 
 RUN apk upgrade --update \
-    && apk add bash git ca-certificates \
-    && npm install -g bower \
+    && apk add bash ca-certificates \
     && npm --unsafe-perm --production install \
-    && apk del git \
     && rm -rf /var/cache/apk/* \
         /app/.git \
         /app/screenshots \

@@ -11,16 +11,16 @@ var async = require("async");
  * in each of your models.
  *
  * For more info on Sails models, see:
- * http://sailsjs.org/#/documentation/concepts/ORM
+ * https://sailsjs.com/documentation/concepts/orm/models
  */
 module.exports.models = {
     /***************************************************************************
      *                                                                          *
-     * Your app's default connection. i.e. the name of one of your app's        *
-     * connections (see `config/connections.js`)                                *
+     * Your app's default datastore. i.e. the name of one of your app's         *
+     * datastores (see `config/datastores.js`)                                  *
      *                                                                          *
      ***************************************************************************/
-    connection: process.env.DB_ADAPTER || 'localDiskDb',
+    datastore: process.env.DB_ADAPTER || 'localDiskDb',
     migrate: 'alter',
 
     updateOrCreate: function(criteria, values, cb){
@@ -28,13 +28,39 @@ module.exports.models = {
         // If no values were specified, use criteria
         if (!values) values = criteria.where ? criteria.where : criteria;
 
-        this.findOne(criteria, function (err, result){
+        // Build a safe where clause - filter out undefined values
+        var safeWhere = {};
+        if (criteria && typeof criteria === 'object') {
+            var src = criteria.where || criteria;
+            for (var key in src) {
+                if (src[key] !== undefined && src[key] !== null) {
+                    safeWhere[key] = src[key];
+                }
+            }
+        }
+
+        // If no valid criteria, just create
+        if (Object.keys(safeWhere).length === 0) {
+            self.create(values).exec(function(err, created) {
+                if(err) return cb(err, false);
+                return cb(null, created);
+            });
+            return;
+        }
+
+        this.findOne(safeWhere, function (err, result){
             if(err) return cb(err, false);
 
             if(result){
-                self.update(criteria, values, cb);
+                self.update(safeWhere, values).exec(function(err, updated) {
+                    if(err) return cb(err, false);
+                    return cb(null, (updated && updated[0]) || result);
+                });
             }else{
-                self.create(values, cb);
+                self.create(values).exec(function(err, created) {
+                    if(err) return cb(err, false);
+                    return cb(null, created);
+                });
             }
         });
     },
@@ -47,7 +73,7 @@ module.exports.models = {
      */
     seed: function (callback) {
         var self = this;
-        var modelName = self.adapter.identity.charAt(0).toUpperCase() + self.adapter.identity.slice(1);
+        var modelName = self.identity.charAt(0).toUpperCase() + self.identity.slice(1);
         if (!self.seedData) {
             sails.log.debug('No data available to seed ' + modelName);
             callback();
@@ -81,7 +107,7 @@ module.exports.models = {
 
     updateRecords : function (callback) {
         var self = this;
-        var modelName = self.adapter.identity.charAt(0).toUpperCase() + self.adapter.identity.slice(1);
+        var modelName = self.identity.charAt(0).toUpperCase() + self.identity.slice(1);
         self.find({}).exec(function (err, results) {
             if (err) {
                 sails.log.debug(err);
@@ -126,7 +152,7 @@ module.exports.models = {
 
     seedArray: function (callback) {
         var self = this;
-        var modelName = self.adapter.identity.charAt(0).toUpperCase() + self.adapter.identity.slice(1);
+        var modelName = self.identity.charAt(0).toUpperCase() + self.identity.slice(1);
         self.createEach(self.seedData).exec(function (err, results) {
             if (err) {
                 sails.log.debug(err);
@@ -139,7 +165,7 @@ module.exports.models = {
     },
     seedObject: function (callback) {
         var self = this;
-        var modelName = self.adapter.identity.charAt(0).toUpperCase() + self.adapter.identity.slice(1);
+        var modelName = self.identity.charAt(0).toUpperCase() + self.identity.slice(1);
         self.create(self.seedData).exec(function (err, results) {
             if (err) {
                 sails.log.debug(err);

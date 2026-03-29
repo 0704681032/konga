@@ -1,6 +1,6 @@
 /**
  * Generic data service to interact with Sails.js backend. This will just
- * wrap $sailsSocket methods to a single service, that is used from application.
+ * wrap $sails methods to a single service, that is used from application.
  *
  * This is needed because we need to make some common url handling for sails
  * endpoint.

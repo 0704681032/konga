@@ -59,10 +59,10 @@ module.exports = function hook(sails) {
                     })
             }
             async.series([
-                sails.models.user.seed,
+                function(cb) { sails.models.user.seed(cb); },
                 seedPassports,
-                sails.models.kongnode.seed,
-                sails.models.emailtransport.seed,
+                function(cb) { sails.models.kongnode.seed(cb); },
+                function(cb) { sails.models.emailtransport.seed(cb); },
                 function seedOrMergeSettings(cb) {
                     var seeds = sails.models.settings.seedData[0]
                     sails.models.settings.find().limit(1)
@@ -83,7 +83,7 @@ module.exports = function hook(sails) {
                     // for simplicity.
                     // After all, it's not like they're
                     // going to use it again.
-                    var uuidv4 = require('uuid/v4');
+                    var { v4: uuidv4 } = require('uuid');
 
                     sails.models.user
                         .update({
@@ -103,7 +103,7 @@ module.exports = function hook(sails) {
                 } else if (users.length !== 0 && JSON.stringify(users[0]) !== '{}') {
                   next();
                 } else {
-                  sails.log.verbose(__filename + ':' + __line + ' [Hook.load-db] Populating database with fixture data...');
+                  sails.log.verbose(__filename + ' [Hook.load-db] Populating database with fixture data...');
 
                   var _ = require('lodash');
                   var Barrels = require('barrels');

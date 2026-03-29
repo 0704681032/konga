@@ -67,12 +67,12 @@ passport.protocols = require('./protocols');
  * @param {Function}  next
  */
 passport.connect = function connect(request, query, profile, next) {
-  sails.log.verbose(__filename + ':' + __line + ' [Service.Passport.connect() called]');
+  sails.log.verbose('[Service.Passport.connect() called]');
 
   var user = {};
 
   // Set the authentication provider.
-  query.provider = request.param('provider');
+  query.provider = request.params.provider || request.body.provider || request.query.provider;
 
   // If the profile object contains a list of emails, grab the first one and add it to the user.
   if (profile.hasOwnProperty('emails')) {
@@ -162,15 +162,15 @@ passport.connect = function connect(request, query, profile, next) {
  * @param {Response}  response
  */
 passport.endpoint = function endpoint(request, response) {
-  sails.log.verbose(__filename + ':' + __line + ' [Service.Passport.endpoint() called]');
+  sails.log.verbose('[Service.Passport.endpoint() called]');
 
   var strategies = sails.config.passport;
-  var provider = request.param('provider');
+  var provider = request.params.provider || request.body.provider || request.query.provider;
   var options = {};
 
   // If a provider doesn't exist for this endpoint, send the user back to the login page
   if (!strategies.hasOwnProperty(provider)) {
-    response.json(401, 'Unknown auth provider');
+    response.status(401).json('Unknown auth provider');
   } else {
     // Attach scope if it has been set in the config
     if (strategies[provider].hasOwnProperty('scope')) {
@@ -198,10 +198,10 @@ passport.endpoint = function endpoint(request, response) {
  * @param {Function}  next
  */
 passport.callback = function callback(request, response, next) {
-  sails.log.verbose(__filename + ':' + __line + ' [Service.Passport.callback() called]');
+  sails.log.verbose('[Service.Passport.callback() called]');
 
-  var provider = request.param('provider', process.env.KONGA_AUTH_PROVIDER  || 'local');
-  var action = request.param('action');
+  var provider = request.params.provider || request.body.provider || request.query.provider || process.env.KONGA_AUTH_PROVIDER || 'local';
+  var action = request.params.action || request.body.action || request.query.action;
 
   if (provider === 'ldap') {
     passport.use(new LdapStrategy(ldapConf));
@@ -248,7 +248,7 @@ passport.callback = function callback(request, response, next) {
  * @param {Request} request
  */
 passport.loadStrategies = function loadStrategies(request) {
-  sails.log.verbose(__filename + ':' + __line + ' [Service.Passport.loadStrategies() called]');
+  sails.log.verbose('[Service.Passport.loadStrategies() called]');
 
   var self = this;
   var strategies = sails.config.passport;
@@ -307,7 +307,7 @@ passport.loadStrategies = function loadStrategies(request) {
 };
 
 passport.serializeUser(function serializeUser(user, next) {
-  sails.log.verbose(__filename + ':' + __line + ' [Service.Passport.serializeUser() called]');
+  sails.log.verbose('[Service.Passport.serializeUser() called]');
 
   if (!user) {
     next({message: 'Invalid user.'}, null);
@@ -317,7 +317,7 @@ passport.serializeUser(function serializeUser(user, next) {
 });
 
 passport.deserializeUser(function deserializeUser(id, next) {
-  sails.log.verbose(__filename + ':' + __line + ' [Service.Passport.deserializeUser() called]');
+  sails.log.verbose('[Service.Passport.deserializeUser() called]');
 
   sails.models['user'].findOne(id, next);
 });

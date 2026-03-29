@@ -16,7 +16,7 @@ var moment = require('moment');
  * @returns {*}
  */
 module.exports.issue = function issue(payload) {
-    sails.log.verbose(__filename + ':' + __line + ' [Service.Token.issue() called]');
+    sails.log.verbose('[Service.Token.issue() called]');
 
     return jwt.sign(
         payload, // This is the payload we want to put inside the token
@@ -32,7 +32,7 @@ module.exports.issue = function issue(payload) {
  * @returns {*}
  */
 module.exports.issueKongConnectionToken = function issueKong(connection) {
-    sails.log.verbose(__filename + ':' + __line + ' [Service.Token.issueKongConnectionToken() called]');
+    sails.log.verbose('[Service.Token.issueKongConnectionToken() called]');
 
 
     var payload = {
@@ -56,7 +56,7 @@ module.exports.issueKongConnectionToken = function issueKong(connection) {
  * @returns {*}
  */
 module.exports.verify = function verify(token, next) {
-    sails.log.verbose(__filename + ':' + __line + ' [Service.Token.verify() called]');
+    sails.log.verbose('[Service.Token.verify() called]');
 
     return jwt.verify(
         token, // The token to be verified
@@ -76,7 +76,7 @@ module.exports.verify = function verify(token, next) {
  * @return  {*}
  */
 module.exports.getToken = function getToken(request, next, throwError) {
-    sails.log.verbose(__filename + ':' + __line + ' [Service.Token.getToken() called]');
+    sails.log.verbose('[Service.Token.getToken() called]');
 
     var token = '';
 
@@ -94,9 +94,16 @@ module.exports.getToken = function getToken(request, next, throwError) {
         } else if (throwError) {
             throw new Error('Invalid authorization header format. Format is Authorization: Bearer [token]');
         }
-    } else if (request.param('token')) { // JWT token sent by parameter
-        token = request.param('token');
+    } else if (request.query && request.query.token) { // JWT token sent by query parameter
+        token = request.query.token;
+    } else if (request.body && request.body.token) { // JWT token sent in body
+        token = request.body.token;
     } else if (throwError) { // Otherwise request didn't contain required JWT token
+        throw new Error('No authorization header was found');
+    }
+
+    // If no token found and throwError is true, throw error before verify
+    if (!token && throwError) {
         throw new Error('No authorization header was found');
     }
 

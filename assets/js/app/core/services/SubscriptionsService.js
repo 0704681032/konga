@@ -23,7 +23,7 @@
 
                 function _subscribe() {
 
-                    io.socket.get('api/kongnodes/healthchecks/subscribe?token=' + AuthService.token(),
+                    io.socket.get('/api/kongnodes/healthchecks/subscribe?token=' + AuthService.token(),
                         function (data, jwr) {
 
                             if (jwr.statusCode == 200) {

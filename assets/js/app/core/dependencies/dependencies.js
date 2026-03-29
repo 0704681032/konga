@@ -17,18 +17,16 @@
     'ui.router',
     'ui.bootstrap',
     'ui.bootstrap.showErrors',
-    'ui.utils',
     'angularMoment',
     'toastr',
     'xeditable',
-    'sails.io',
+    'ngSails',
     'angularUtils.directives.uiBreadcrumbs',
     'angularUtils.directives.dirPagination',
     'yaru22.jsonHuman',
     'cfp.loadingBar',
     'frapontillo.bootstrap-switch',
     'ngFileUpload',
-    'base64',
-    'angular.vertilize'
+    'base64'
   ]);
 }());

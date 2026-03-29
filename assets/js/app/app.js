@@ -34,7 +34,7 @@
   /**
    * Configuration for frontend application, this contains following main sections:
    *
-   *  1) Configure $httpProvider and $sailsSocketProvider
+   *  1) Configure $httpProvider and $sailsProvider
    *  2) Set necessary HTTP and Socket interceptor(s)
    *  3) Turn on HTML5 mode on application routes
    *  4) Set up application routes
@@ -79,11 +79,11 @@
       });
     }])
     .config([
-      '$stateProvider', '$locationProvider', '$urlRouterProvider', '$httpProvider', '$sailsSocketProvider',
+      '$stateProvider', '$locationProvider', '$urlRouterProvider', '$httpProvider', '$sailsProvider',
       'cfpLoadingBarProvider',
       'toastrConfig',
       'AccessLevels',
-      function config($stateProvider, $locationProvider, $urlRouterProvider, $httpProvider, $sailsSocketProvider,
+      function config($stateProvider, $locationProvider, $urlRouterProvider, $httpProvider, $sailsProvider,
                       cfpLoadingBarProvider,
                       toastrConfig,
                       AccessLevels) {
@@ -91,7 +91,7 @@
 
         delete $httpProvider.defaults.headers.common['X-Requested-With'];
 
-        // Add interceptors for $httpProvider and $sailsSocketProvider
+        // Add interceptors for $httpProvider and $sailsProvider
         $httpProvider.interceptors.push('AuthInterceptor');
         $httpProvider.interceptors.push('ErrorInterceptor');
         $httpProvider.interceptors.push('timeoutHttpIntercept');
@@ -100,9 +100,9 @@
         //$httpProvider.interceptors.push('TemplateCacheInterceptor');
         $httpProvider.interceptors.push('KongaInterceptor');
 
-        // Iterate $httpProvider interceptors and add those to $sailsSocketProvider
+        // Iterate $httpProvider interceptors and add those to $sailsProvider
         angular.forEach($httpProvider.interceptors, function iterator(interceptor) {
-          $sailsSocketProvider.interceptors.push(interceptor);
+          $sailsProvider.interceptors.push(interceptor);
         });
 
 

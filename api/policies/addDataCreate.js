@@ -8,7 +8,7 @@
  * @param   {Function}  next        Callback function
  */
 module.exports = function addDataCreate(request, response, next) {
-  sails.log.verbose(__filename + ':' + __line + ' [Policy.addDataCreate() called]');
+  sails.log.verbose('[Policy.addDataCreate() called]');
 
   if(process.env.NO_AUTH === 'true') {
     return next();

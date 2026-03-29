@@ -1,7 +1,5 @@
 'use strict';
 
-var actionUtil = require('sails/lib/hooks/blueprints/actionUtil');
-
 /**
  * BaseController.js
  *
@@ -16,10 +14,22 @@ module.exports = {
    * @param   {Response}  response
    */
   count: function count(request, response) {
-    var Model = actionUtil.parseModel(request);
+    // In Sails 1.x, use request.options.model or derive from controller name
+    var modelIdentity = request.options.model || request.options.controller;
+
+    // If not found, try to derive from the controller's identity
+    if (!modelIdentity && this.identity) {
+      modelIdentity = this.identity;
+    }
+
+    var Model = sails.models[modelIdentity];
+
+    if (!Model) {
+      return response.serverError('Could not determine model for count action.');
+    }
 
     Model
-      .count(actionUtil.parseCriteria(request))
+      .count({})
       .exec(function found(error, count) {
         if (error) {
           response.negotiate(error);

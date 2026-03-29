@@ -20,15 +20,14 @@ var _ = require('lodash');
 var defaultModel = {
   schema: true,
   tableName : "konga_passports",
-  autoPK : false,
+  primaryKey: 'id',
 
   attributes: {
 
 
     id : {
-      type: 'integer',
-      primaryKey: true,
-      unique: true,
+      type: 'number',
+      columnType: 'integer',
       autoIncrement : true
     },
 
@@ -41,7 +40,7 @@ var defaultModel = {
      * party service (e.g. 'oauth', 'oauth2', 'openid').
      */
     protocol: {
-      type: 'alphanumeric',
+      type: 'string',
       required: true
     },
 
@@ -70,7 +69,7 @@ var defaultModel = {
      * and a `refreshToken` will be issued.
      */
     provider: {
-      type: 'alphanumericdashed'
+      type: 'string'
     },
 
     identifier: {
@@ -91,18 +90,19 @@ var defaultModel = {
      * https://github.com/balderdashy/waterline
      */
     user: {
-      model: 'User'
-    },
-
-    /**
-     * Validate password used by the local strategy.
-     *
-     * @param   {string}    password    The password to validate
-     * @param   {Function}  next
-     */
-    validatePassword: function validatePassword(password, next) {
-      bcrypt.compare(password, this.password, next);
+      model: 'user'
     }
+  },
+
+  /**
+   * Validate password used by the local strategy.
+   *
+   * @param   {Object}    passport    The passport instance
+   * @param   {string}    password    The password to validate
+   * @param   {Function}  next
+   */
+  validatePassword: function validatePassword(passport, password, next) {
+    bcrypt.compare(password, passport.password, next);
   },
 
   /**
@@ -149,16 +149,15 @@ var defaultModel = {
 
 var mongoModel = function() {
   var obj = _.cloneDeep(defaultModel)
-  delete obj.autoPK
   delete obj.attributes.id
   return obj;
 }
 
-if(sails.config.models.connection == 'postgres' && process.env.DB_PG_SCHEMA) {
+if(sails.config.models.datastore == 'postgres' && process.env.DB_PG_SCHEMA) {
   defaultModel.meta =  {
     schemaName: process.env.DB_PG_SCHEMA
   }
 }
 
 
-module.exports = sails.config.models.connection == 'mongo' ? mongoModel() : defaultModel
+module.exports = sails.config.models.datastore == 'mongo' ? mongoModel() : defaultModel

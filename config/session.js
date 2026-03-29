@@ -21,7 +21,7 @@ module.exports.session = {
    * of your users, forcing them to log in again.                             *
    *                                                                          *
    ***************************************************************************/
-  secret: ''
+  secret: 'konga_session_secret_key_12345'
 
   /***************************************************************************
    *                                                                          *

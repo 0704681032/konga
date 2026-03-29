@@ -10,12 +10,11 @@ var _ = require('lodash');
  */
 var defaultModel = _.merge(_.cloneDeep(require('../base/Model')), {
   tableName : "konga_kong_services",
-  autoPK : false,
+  primaryKey: 'id',
   attributes: {
     id : {
-      type: 'integer',
-      primaryKey: true,
-      unique: true,
+      type: 'number',
+      columnType: 'integer',
       autoIncrement : true
     },
 
@@ -40,13 +39,13 @@ var defaultModel = _.merge(_.cloneDeep(require('../base/Model')), {
   }
 });
 
-var mongoModel =  _.omit(_.cloneDeep(defaultModel),["autoPK","attributes.id"]);
+var mongoModel =  _.omit(_.cloneDeep(defaultModel),["attributes.id"]);
 
-if(sails.config.models.connection == 'postgres' && process.env.DB_PG_SCHEMA) {
+if(sails.config.models.datastore == 'postgres' && process.env.DB_PG_SCHEMA) {
   defaultModel.meta =  {
     schemaName: process.env.DB_PG_SCHEMA
   }
 }
 
 
-module.exports = sails.config.models.connection == 'mongo' ? mongoModel : defaultModel
+module.exports = sails.config.models.datastore == 'mongo' ? mongoModel : defaultModel

@@ -18,7 +18,7 @@ module.exports = _.merge(_.cloneDeep(require('../base/Controller')), {
         }
 
         var roomName = 'api.health_checks';
-        sails.sockets.join(req.socket, roomName);
+        sails.sockets.join(req, roomName);
         res.json({
             room: roomName
         });

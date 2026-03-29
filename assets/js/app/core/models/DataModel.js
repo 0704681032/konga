@@ -8,11 +8,11 @@
 
   angular.module('frontend.core.models')
     .factory('DataModel', [
-      '$sailsSocket', '$log',
+      '$sails', '$log',
       '_','$rootScope',
       'DataService','MessageService',
       function(
-        $sailsSocket, $log,
+        $sails, $log,
         _,$rootScope,
         DataService,MessageService
       ) {
@@ -441,9 +441,9 @@
 
             // $log.log('Subscribing to => ' + self.endpoint.replace('api/',''))
 
-          // Actual subscribe
-          $sailsSocket
-            .subscribe(self.endpoint.replace('api/',''), function modelEvent(message) {
+          // Actual subscribe - use $sails.on() for socket events
+          $sails
+            .on(self.endpoint.replace('api/',''), function modelEvent(message) {
 
               // Handle socket event
               self._handleEvent(message);

@@ -10,7 +10,41 @@ var _ = require('lodash');
  */
 module.exports = _.merge(_.cloneDeep(require('../base/Controller')), {
 
+    count: function(req, res) {
+        sails.models.user.count({}).exec(function(err, count) {
+            if (err) return res.negotiate(err);
+            return res.ok({count: count});
+        });
+    },
 
+    findOne: function(req, res) {
+        var id = req.params.id;
+        sails.models.user.findOne({id: id}).exec(function(err, record) {
+            if (err) return res.negotiate(err);
+            if (!record) {
+                return res.status(404).send('No record found with the specified `id`.');
+            }
+            return res.ok(record);
+        });
+    },
+
+    create: function(req, res) {
+        sails.models.user.create(req.body).meta({fetch: true}).exec(function(err, record) {
+            if (err) return res.negotiate(err);
+            return res.created(record);
+        });
+    },
+
+    destroy: function(req, res) {
+        var id = req.params.id;
+        sails.models.user.destroy({id: id}).meta({fetch: true}).exec(function(err, records) {
+            if (err) return res.negotiate(err);
+            if (!records || records.length === 0) {
+                return res.status(404).send('No record found with the specified `id`.');
+            }
+            return res.ok(records[0]);
+        });
+    },
 
     subscribe: function(req, res) {
 
@@ -19,8 +53,8 @@ module.exports = _.merge(_.cloneDeep(require('../base/Controller')), {
             return res.badRequest('Only a client socket can subscribe.');
         }
 
-        var roomName = 'user.' + req.param("id") + '.updated';
-        sails.sockets.join(req.socket, roomName);
+        var roomName = 'user.' + req.params.id + '.updated';
+        sails.sockets.join(req, roomName);
         res.json({
             room: roomName
         });
@@ -39,7 +73,8 @@ module.exports = _.merge(_.cloneDeep(require('../base/Controller')), {
 
 
         sails.models.user
-            .update({id : req.param('id')},user)
+            .update({id : req.params.id},user)
+            .meta({fetch: true})
             .exec(function(err,updated){
                 if(err) return res.negotiate(err);
 
@@ -55,17 +90,21 @@ module.exports = _.merge(_.cloneDeep(require('../base/Controller')), {
                         .exec(function(err,node){
                             if(err) return res.negotiate(err)
                             user.node = node;
-                            sails.sockets.blast('user.' + user.id + '.updated', user);
+                            if(sails.sockets) {
+                                sails.sockets.blast('user.' + user.id + '.updated', user);
+                            }
                         })
                 }else{
-                    sails.sockets.blast('user.' + user.id + '.updated', user);
+                    if(sails.sockets) {
+                        sails.sockets.blast('user.' + user.id + '.updated', user);
+                    }
                 }
 
 
                 if(!passports) return res.json(user)
 
                 sails.models.passport
-                    .update({user:req.param('id')},{password:passports.password})
+                    .update({user:req.params.id},{password:passports.password})
                     .exec(function(err,updatedPassport){
                         if(err) return res.negotiate(err);
                         return  res.json(user)

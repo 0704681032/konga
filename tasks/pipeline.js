@@ -17,14 +17,14 @@
 // (if you're using LESS with the built-in default config, you'll want
 //  to change `assets/styles/importer.less` instead.)
 var cssFilesToInject = [
-  "bower_components/angular-loading-bar/build/loading-bar.css",
-  "bower_components/angular-xeditable/dist/css/xeditable.css",
-  "bower_components/angular-toastr/dist/angular-toastr.css",
-  "bower_components/bootstrap-switch/dist/css/bootstrap3/bootstrap-switch.css",
-  "bower_components/angular-spinkit/build/angular-spinkit.min.css",
-  "bower_components/angular-chips/dist/main.css",
-  "bower_components/angular-json-human/dist/angular-json-human.css",
-  "bower_components/mdi/css/materialdesignicons.css",
+  "node_modules/angular-loading-bar/build/loading-bar.css",
+  "node_modules/angular-xeditable/dist/css/xeditable.css",
+  "node_modules/angular-toastr/dist/angular-toastr.min.css",
+  "node_modules/bootstrap-switch/dist/css/bootstrap3/bootstrap-switch.css",
+  "node_modules/angular-spinkit/build/angular-spinkit.min.css",
+  "node_modules/angular-chips/dist/main.css",
+  "node_modules/angular-json-human/dist/angular-json-human.css",
+  "node_modules/mdi/css/materialdesignicons.css",
   "styles/**/*.css"
 ];
 
@@ -33,44 +33,41 @@ var cssFilesToInject = [
 // (uses Grunt-style wildcard/glob/splat expressions)
 var jsFilesToInject = [
 
-  // Load sails.io before everything else
-  //'js/dependencies/sails.io.js',
+  // Load sails.io before everything else (use npm version for Sails 1.x compatibility)
+  "node_modules/sails.io.js/dist/sails.io.js",
 
-  "bower_components/jquery/dist/jquery.js",
-  "bower_components/angular/angular.js",
-  "bower_components/angular-animate/angular-animate.js",
-  "bower_components/angular-loading-bar/build/loading-bar.js",
-  "bower_components/angular-ui-router/release/angular-ui-router.js",
-  "bower_components/angular-ui-utils/ui-utils.js",
-  "bower_components/moment/moment.js",
-  "bower_components/later/later.js",
-  "bower_components/prettycron/prettycron.js",
-  "bower_components/angular-bootstrap-show-errors/src/showErrors.js",
-  "bower_components/angular-sanitize/angular-sanitize.js",
-  "bower_components/angular-xeditable/dist/js/xeditable.js",
-  "bower_components/angular-toastr/dist/angular-toastr.tpls.js",
-  "bower_components/bootstrap/dist/js/bootstrap.js",
-  "bower_components/angularSails/dist/ngsails.io.js",
-  "bower_components/ngstorage/ngStorage.js",
-  "bower_components/bootswatch-dist/js/bootstrap.js",
-  "bower_components/angular-bootstrap/ui-bootstrap-tpls.js",
-  "bower_components/lodash/lodash.js",
-  "bower_components/bootstrap-switch/dist/js/bootstrap-switch.js",
-  "bower_components/angular-spinkit/build/angular-spinkit.js",
-  "bower_components/angular-chips/dist/angular-chips.js",
-  "bower_components/ng-file-upload/ng-file-upload.js",
-  "bower_components/angular-messages/angular-messages.js",
-  "bower_components/angular-utils-pagination/dirPagination.js",
-  "bower_components/chart.js/dist/Chart.js",
-  "bower_components/angular-resource/angular-resource.js",
-  "bower_components/angular-moment/angular-moment.js",
-  "bower_components/bootbox/bootbox.js",
-  "bower_components/ngBootbox/dist/ngBootbox.js",
-  "bower_components/angular-json-human/dist/angular-json-human.js",
-  "bower_components/angular-bootstrap-switch/dist/angular-bootstrap-switch.js",
-  "bower_components/angular-chart.js/dist/angular-chart.js",
-  "bower_components/angular-base64/angular-base64.js",
-  "bower_components/angular-google-chart/ng-google-chart.js",
+  "node_modules/jquery/dist/jquery.js",
+  "node_modules/angular/angular.js",
+  "node_modules/angular-animate/angular-animate.js",
+  "node_modules/angular-loading-bar/build/loading-bar.js",
+  "node_modules/angular-ui-router/release/angular-ui-router.js",
+  "node_modules/moment/moment.js",
+  "node_modules/later/later.js",
+  "node_modules/prettycron/prettycron.js",
+  "node_modules/angular-bootstrap-show-errors/src/showErrors.js",
+  "node_modules/angular-sanitize/angular-sanitize.js",
+  "node_modules/angular-xeditable/dist/js/xeditable.js",
+  "node_modules/angular-toastr/dist/angular-toastr.tpls.js",
+  "node_modules/bootstrap/dist/js/bootstrap.js",
+  "node_modules/angular-sails/dist/angular-sails.min.js",
+  "node_modules/ngstorage/ngStorage.js",
+  "node_modules/angular-ui-bootstrap/dist/ui-bootstrap-tpls.js",
+  "node_modules/lodash/lodash.js",
+  "node_modules/bootstrap-switch/dist/js/bootstrap-switch.js",
+  "node_modules/angular-spinkit/build/angular-spinkit.js",
+  "node_modules/angular-chips/dist/angular-chips.js",
+  "node_modules/ng-file-upload/dist/ng-file-upload.js",
+  "node_modules/angular-messages/angular-messages.js",
+  "node_modules/angular-utils-pagination/dirPagination.js",
+  "node_modules/chart.js/dist/Chart.js",
+  "node_modules/angular-resource/angular-resource.js",
+  "node_modules/angular-moment/angular-moment.js",
+  "node_modules/bootbox/bootbox.js",
+  "node_modules/ngBootbox/dist/ngBootbox.js",
+  "node_modules/angular-json-human/dist/angular-json-human.js",
+  "node_modules/angular-bootstrap-switch/dist/angular-bootstrap-switch.js",
+  "node_modules/angular-chart.js/dist/angular-chart.js",
+  "node_modules/angular-base64/angular-base64.js",
 
   // All of the rest of your client-side js files
   // will be injected here in no particular order.
@@ -112,6 +109,27 @@ module.exports.jsFilesToInject = jsFilesToInject.map(function (jsPath) {
   }
   return require('path').join('.tmp/public/', jsPath);
 });
+// node_modules files that need to be copied to .tmp/public/node_modules
+// Extracted from cssFilesToInject and jsFilesToInject
+// Copy entire directories for each package, not just single files
+var nodeModulesToCopy = [];
+var seenPackages = {};
+cssFilesToInject.concat(jsFilesToInject).forEach(function(p) {
+  if (p.startsWith('node_modules/')) {
+    var parts = p.replace('node_modules/', '').split('/');
+    var packageName = parts[0];
+    // Handle scoped packages like @scope/package
+    if (packageName.startsWith('@') && parts.length > 1) {
+      packageName = parts[0] + '/' + parts[1];
+    }
+    if (!seenPackages[packageName]) {
+      seenPackages[packageName] = true;
+      nodeModulesToCopy.push(packageName + '/**/*');
+    }
+  }
+});
+module.exports.nodeModulesToCopy = nodeModulesToCopy;
+
 module.exports.templateFilesToInject = templateFilesToInject.map(function (tplPath) {
   // If we're ignoring the file, make sure the ! is at the beginning of the path
   if (tplPath[0] === '!') {

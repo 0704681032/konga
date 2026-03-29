@@ -8,7 +8,7 @@ var KongConsumersController = {
 
   apis: (req, res) => {
 
-    var consumerId = req.param("id");
+    var consumerId = req.params.id;
 
     // Fetch all acls of the specified consumer
     Kong.listAllCb(req, '/consumers/' + consumerId + '/acls', function (err, _acls) {
@@ -82,7 +82,7 @@ var KongConsumersController = {
 
   services : async (req,res) => {
 
-    var consumerId = req.param("id");
+    var consumerId = req.params.id;
 
     try {
 
@@ -243,7 +243,7 @@ var KongConsumersController = {
   },
 
   routes : async (req,res) => {
-    let consumerId = req.param("id");
+    let consumerId = req.params.id;
 
     try {
 

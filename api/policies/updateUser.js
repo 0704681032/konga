@@ -9,7 +9,7 @@
  */
 module.exports = function updateUser(request, response, next) {
   sails.log.verbose(
-    __filename + ":" + __line + " [Policy.updateUser() called]"
+    "[Policy.updateUser() called]"
   );
 
   var password = request.body.passports

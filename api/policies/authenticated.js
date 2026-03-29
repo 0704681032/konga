@@ -14,7 +14,7 @@ var _ = require('lodash');
  * @returns {*}
  */
 module.exports = function authenticated(request, response, next) {
-  sails.log.verbose(__filename + ':' + __line + ' [Policy.Authenticated() called]');
+  sails.log.verbose('[Policy.Authenticated() called]');
 
   if(process.env.NO_AUTH === 'true') {
     // // Store user id to request object
@@ -36,7 +36,7 @@ module.exports = function authenticated(request, response, next) {
    */
   var verify = function verify(error, token) {
     if (!(_.isEmpty(error) && token !== -1)) {
-      return response.json(401, {message: 'Given authorization token is not valid', logout: true});
+      return response.status(401).json({message: 'Given authorization token is not valid', logout: true});
     } else {
       // Store user id to request object
       request.token = token;
@@ -53,6 +53,6 @@ module.exports = function authenticated(request, response, next) {
   try {
     sails.services.token.getToken(request, verify, true);
   } catch (error) {
-    return response.json(401, {message: error.message, logout: true});
+    return response.status(401).json({message: error.message, logout: true});
   }
 };

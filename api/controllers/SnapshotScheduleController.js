@@ -36,6 +36,7 @@ module.exports = _.merge(_.cloneDeep(require('../base/Controller')), {
 
 
             sails.models.snapshotschedule.create(req.body)
+                .meta({fetch: true})
                 .exec(function (err,created) {
                     if(err) {
                         return res.negotiate(err);

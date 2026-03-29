@@ -20,7 +20,7 @@ before(function before(next) {
         Sails.lift({
             // configuration for testing purposes
             models: {
-                connection: 'localDiskDb',
+                datastore: 'localDiskDb',
                 migrate: 'drop'
             },
             port: 1336,

@@ -131,7 +131,7 @@ var self = module.exports = {
         sails.models.kongservices.create(_.merge({
           kong_node_id: connectionId,
           service_id: entityId
-        }, konga_extras), function (err, extras) {
+        }, konga_extras)).meta({fetch: true}).exec(function (err, extras) {
           if(err) {
             sails.log.error(err);
             return next(err);

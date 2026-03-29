@@ -120,28 +120,11 @@ module.exports.blueprints = {
    * may result in very heavy api calls                                       *
    *                                                                          *
    ***************************************************************************/
-  populate: false,
-
   /****************************************************************************
    *                                                                           *
    * Whether to run Model.watch() in the find and findOne blueprint actions.   *
    * Can be overridden on a per-model basis.                                   *
    *                                                                           *
    ****************************************************************************/
-  autoWatch: true,
-
-  /**
-   * We want to mirror all socket events also to request maker itself, this simplifies some frontend side data
-   * handling logic.
-   */
-  mirror: true,
-
-  /****************************************************************************
-   *                                                                           *
-   * The default number of records to show in the response from a "find"       *
-   * action. Doubles as the default size of populated arrays if populate is    *
-   * true.                                                                     *
-   *                                                                           *
-   ****************************************************************************/
-  defaultLimit: 4294967295
+  autoWatch: true
 };

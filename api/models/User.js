@@ -14,12 +14,11 @@ var defSeedData = require('../../config/default-seed-data.js');
 
 var defaultModel = _.merge(_.cloneDeep(require('../base/Model')), {
   tableName: "konga_users",
-  autoPK: false,
+  primaryKey: 'id',
   attributes: {
     id: {
-      type: 'integer',
-      primaryKey: true,
-      unique: true,
+      type: 'number',
+      columnType: 'integer',
       autoIncrement: true
     },
     username: {
@@ -28,7 +27,8 @@ var defaultModel = _.merge(_.cloneDeep(require('../base/Model')), {
       required: true
     },
     email: {
-      type: 'email',
+      type: 'string',
+      isEmail: true,
       unique: true,
       required: true
     },
@@ -72,10 +72,12 @@ var defaultModel = _.merge(_.cloneDeep(require('../base/Model')), {
 
     sails.log("User:afterDestroy:called => ", values);
 
+    // In Sails 1.x, afterDestroy receives a single record, not an array
+    var users = Array.isArray(values) ? values : [values];
 
     var fns = [];
 
-    values.forEach(function (user) {
+    users.forEach(function (user) {
       fns.push(function (callback) {
         // Delete passports
         sails.models.passport.destroy({user: user.id})
@@ -101,15 +103,14 @@ var defaultModel = _.merge(_.cloneDeep(require('../base/Model')), {
 
 var mongoModel = function () {
   var obj = _.cloneDeep(defaultModel)
-  delete obj.autoPK
   delete obj.attributes.id
   return obj;
 }
 
-if(sails.config.models.connection == 'postgres' && process.env.DB_PG_SCHEMA) {
+if(sails.config.models.datastore == 'postgres' && process.env.DB_PG_SCHEMA) {
   defaultModel.meta =  {
     schemaName: process.env.DB_PG_SCHEMA
   }
 }
 
-module.exports = sails.config.models.connection == 'mongo' ? mongoModel() : defaultModel
+module.exports = sails.config.models.datastore == 'mongo' ? mongoModel() : defaultModel

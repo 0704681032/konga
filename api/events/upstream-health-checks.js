@@ -5,7 +5,7 @@
 const events = require('events');
 const _ = require('lodash');
 const eventEmitter = new events.EventEmitter();
-const unirest = require('unirest')
+const unirest = require('axios')
 const cron = require('node-cron');
 const moment = require('moment')
 const hcmailer = require('nodemailer');
@@ -21,7 +21,7 @@ const sendmail = require('sendmail')({
     },
     silent: false
 })
-const Utils = require("../helpers/utils");
+const Utils = require("../services/Utils");
 
 let tasks = {};
 

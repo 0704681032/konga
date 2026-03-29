@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install:*)",
+      "Bash(npm audit:*)",
+      "Bash(npm show:*)",
+      "Bash(node -e \"const d=JSON.parse\\(require\\(''''fs''''\\).readFileSync\\(process.argv[1],''''utf8''''\\)\\); console.log\\(JSON.stringify\\(d.dependencies,null,2\\)\\)\" -)",
+      "Bash(node scripts/fix-vulnerable-deps.js)",
+      "Bash(npm shrinkwrap:*)",
+      "Bash(npm view:*)",
+      "Bash(npm pack:*)",
+      "Bash(timeout 30 node app.js)",
+      "Bash(timeout 45 node app.js)",
+      "Bash(grep -v \"DEPRECATION\\\\|sass-lang\\\\|^$\\\\|╵\\\\|╷\\\\│\" /tmp/konga-start.log)",
+      "Bash(node:*)",
+      "Bash(npm ls:*)"
+    ]
+  }
+}

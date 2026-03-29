@@ -1,0 +1,34 @@
+diff --git a/node_modules/barrels/index.js b/node_modules/barrels/index.js
+index 4e71fae..84940ab 100644
+--- a/node_modules/barrels/index.js
++++ b/node_modules/barrels/index.js
+@@ -131,7 +131,7 @@ Barrels.prototype.populate = function(collections, done, autoAssociations) {
+     var Model = sails.models[modelName];
+     if (Model) {
+       // Cleanup existing data in the table / collection
+-      Model.destroy().exec(function(err) {
++      Model.destroy({}).exec(function(err) {
+         if (err)
+           return nextModel(err);
+ 
+@@ -140,7 +140,10 @@ Barrels.prototype.populate = function(collections, done, autoAssociations) {
+         for (var i = 0; i < Model.associations.length; i++) {
+           var alias = Model.associations[i].alias;
+           that.associations[modelName][alias] = Model.associations[i];
+-          that.associations[modelName][alias].required = !!(Model._validator.validations[alias].required);
++          that.associations[modelName][alias].required = !!(
++            (Model._validator && Model._validator.validations && Model._validator.validations[alias] && Model._validator.validations[alias].required) ||
++            (Model.attributes && Model.attributes[alias] && Model.attributes[alias].required)
++          );
+         }
+ 
+         // Insert all the fixture items
+@@ -176,7 +179,7 @@ Barrels.prototype.populate = function(collections, done, autoAssociations) {
+           }
+ 
+           // Insert
+-          Model.create(item).exec(function(err, model) {
++          Model.create(item).fetch().exec(function(err, model) {
+             if (err)
+               return nextItem(err);
+ 

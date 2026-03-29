@@ -28,6 +28,11 @@ module.exports = function(grunt) {
         cwd: './assets',
         src: ['**/*.!(coffee|less)'],
         dest: '.tmp/public'
+      }, {
+        expand: true,
+        cwd: './node_modules',
+        src: require('../pipeline').nodeModulesToCopy,
+        dest: '.tmp/public/node_modules'
       }]
     },
     build: {

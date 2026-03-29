@@ -45,7 +45,7 @@ module.exports = _.merge(_.cloneDeep(require('../base/Controller')), {
     }
 
     var roomName = 'events.snapshots';
-    sails.sockets.join(req.socket, roomName);
+    sails.sockets.join(req, roomName);
     res.json({
       room: roomName
     });
@@ -54,14 +54,14 @@ module.exports = _.merge(_.cloneDeep(require('../base/Controller')), {
   snapshot: async (req, res) => {
     // Get node
     sails.models.kongnode.findOne({
-      id: req.param("node_id")
+      id: req.query.node_id || req.params.node_id
     }).exec(async (err, node) => {
       if (err) return res.negotiate(err)
       if (!node) return res.badRequest({
         message: "Invalid Kong Node"
       })
       try {
-        const snapshot = await SnapshotsService.snapshot(req.param('name'), node);
+        const snapshot = await SnapshotsService.snapshot(req.body.name || req.query.name, node);
         return res.json(snapshot);
       } catch (e) {
         return res.negotiate(e)
@@ -74,7 +74,7 @@ module.exports = _.merge(_.cloneDeep(require('../base/Controller')), {
 
     // Get node
     sails.models.kongnode.findOne({
-      id: req.param("node_id")
+      id: req.query.node_id || req.params.node_id
     }).exec(function (err, node) {
       if (err) return res.negotiate(err)
       if (!node) return res.badRequest({
@@ -84,7 +84,7 @@ module.exports = _.merge(_.cloneDeep(require('../base/Controller')), {
 
       res.ok(); // Reply directly because snapshot creation may take some time
 
-      SnapshotsService.takeSnapShot(req.param("name"), node, function (err, ok) {
+      SnapshotsService.takeSnapShot(req.body.name || req.query.name, node, function (err, ok) {
         // Fire and forget.
         // Everything is handled by events and socket messages.
 
@@ -106,7 +106,7 @@ module.exports = _.merge(_.cloneDeep(require('../base/Controller')), {
       })
 
       // Fix put imports in correct order
-      const requestedImports = req.param("imports") || Object.keys(snapshot.data);
+      const requestedImports = req.body.imports || Object.keys(snapshot.data);
       sails.log('SnapshotsController:restore:requestedImports', requestedImports);
 
       try {
@@ -634,7 +634,7 @@ module.exports = _.merge(_.cloneDeep(require('../base/Controller')), {
   },
 
   download: function (req, res) {
-    var id = req.param('id');
+    var id = req.params.id;
     var SkipperDisk = require('skipper-disk');
     var fileAdapter = SkipperDisk(/* optional opts */);
 

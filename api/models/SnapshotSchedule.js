@@ -5,12 +5,11 @@ var Scheduler = require("../services/SnapshotsScheduler");
 
 var defaultModel = _.merge(_.cloneDeep(require('../base/Model')), {
     tableName: "konga_kong_snapshot_schedules",
-    autoPK: false,
+    primaryKey: 'id',
     attributes: {
         id: {
-            type: 'integer',
-            primaryKey: true,
-            unique: true,
+            type: 'number',
+            columnType: 'integer',
             autoIncrement: true
         },
         // name: {
@@ -31,8 +30,8 @@ var defaultModel = _.merge(_.cloneDeep(require('../base/Model')), {
         },
 
         lastRunAt : {
-            type : 'date',
-            defaultsTo : null
+            type : 'string',
+            columnType : 'date'
         }
     },
 
@@ -87,17 +86,16 @@ var defaultModel = _.merge(_.cloneDeep(require('../base/Model')), {
 
 var mongoModel = function () {
     var obj = _.cloneDeep(defaultModel)
-    delete obj.autoPK
     delete obj.attributes.id
     return obj;
 }
 
 
-if(sails.config.models.connection == 'postgres' && process.env.DB_PG_SCHEMA) {
+if(sails.config.models.datastore == 'postgres' && process.env.DB_PG_SCHEMA) {
   defaultModel.meta =  {
     schemaName: process.env.DB_PG_SCHEMA
   }
 }
 
 
-module.exports = sails.config.models.connection == 'mongo' ? mongoModel() : defaultModel
+module.exports = sails.config.models.datastore == 'mongo' ? mongoModel() : defaultModel

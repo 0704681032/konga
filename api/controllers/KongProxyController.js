@@ -2,7 +2,7 @@
  * RemoteApiController
  */
 
-var unirest = require("unirest");
+var axios = require("axios");
 var KongService = require("../services/KongService");
 var ProxyHooks = require("../services/KongProxyHooks");
 var _ = require("lodash");
@@ -47,7 +47,9 @@ var self = module.exports = {
 
     sails.log("Kong admin url =>", req.connection.kong_admin_url);
 
-    var request = unirest[req.method.toLowerCase()](req.connection.kong_admin_url + req.url)
+    var url = req.connection.kong_admin_url + req.url;
+    var method = req.method.toLowerCase();
+    var headers = KongService.headers(req.connection, true);
 
     // Assign Konga correlations to a var if set in the request
     var konga_extras;
@@ -58,11 +60,8 @@ var self = module.exports = {
       delete req.body.extras;
     }
 
-    // Set the appropriate request headers
-    request.headers(KongService.headers(req.connection, true))
-
     // Apply monkey patches
-    if (['post', 'put', 'patch'].indexOf(req.method.toLowerCase()) > -1) {
+    if (['post', 'put', 'patch'].indexOf(method) > -1) {
 
       if (req.body && req.body.orderlist) {
         for (var i = 0; i < req.body.orderlist.length; i++) {
@@ -79,16 +78,26 @@ var self = module.exports = {
       }
     }
 
+    var axiosConfig = {
+      method: method,
+      url: url,
+      headers: headers
+    };
+    if (['post', 'put', 'patch'].indexOf(method) > -1) {
+      axiosConfig.data = req.body;
+    }
+
     // Apply before Hooks
-    switch(req.method.toLowerCase()) {
+    switch(method) {
       case "patch":
-        return ProxyHooks.beforeEntityUpdate(entity, req.param("id"), req.connection.id, _.merge(req.body,{extras: konga_extras}), function (err, data) {
+        return ProxyHooks.beforeEntityUpdate(entity, req.params.id, req.connection.id, _.merge(req.body,{extras: konga_extras}), function (err, data) {
           if(err) return res.badRequest(err);
           req.body = data; // Assign the resulting data to req.body
-          return self.send(entity, request, konga_extras, req, res)
+          axiosConfig.data = req.body;
+          return self.send(entity, axiosConfig, konga_extras, req, res);
         });
       default:
-        return self.send(entity, request, konga_extras,  req, res);
+        return self.send(entity, axiosConfig, konga_extras,  req, res);
     }
 
   },
@@ -117,47 +126,41 @@ var self = module.exports = {
   /**
    * Actually send the request to Kong
    * @param entity
-   * @param unirestReq
+   * @param axiosConfig
    * @param konga_extras
    * @param req
    * @param res
    */
-  send: function (entity, unirestReq, konga_extras, req, res) {
+  send: function (entity, axiosConfig, konga_extras, req, res) {
 
-    // Clean up the mess
-    // delete req.body.token;
+    axios(axiosConfig)
+      .then(function (response) {
+        var body = response.data;
 
-    unirestReq.send(req.body);
-
-    unirestReq.end(function (response) {
-      if (response.error) {
-        sails.log.error("KongProxyController", "request error", response.body);
-        return res.negotiate(response);
-      }
-
-
-      // Apply after Hooks
-      switch(req.method.toLowerCase()) {
-        case "get":
-          return ProxyHooks.afterEntityRetrieve(entity, req, response.body, function (err, data) {
-            if(err) return res.badRequest(err);
-            return res.json(data);
-          });
-        case "post":
-          return ProxyHooks.afterEntityCreate(entity, req, response.body, konga_extras || {}, function (err, data) {
-            if(err) return res.badRequest(err);
-            return res.json(data);
-          });
-        case "delete":
-          return ProxyHooks.afterEntityDelete(entity,req,function (err) {
-            if(err) return res.badRequest(err);
-            return res.json(response);
-          });
-        default:
-          return res.json(response.body)
-      }
-
-
-    });
+        // Apply after Hooks
+        switch(req.method.toLowerCase()) {
+          case "get":
+            return ProxyHooks.afterEntityRetrieve(entity, req, body, function (err, data) {
+              if(err) return res.badRequest(err);
+              return res.json(data);
+            });
+          case "post":
+            return ProxyHooks.afterEntityCreate(entity, req, body, konga_extras || {}, function (err, data) {
+              if(err) return res.badRequest(err);
+              return res.json(data);
+            });
+          case "delete":
+            return ProxyHooks.afterEntityDelete(entity,req,function (err) {
+              if(err) return res.badRequest(err);
+              return res.json(response.data);
+            });
+          default:
+            return res.json(body)
+        }
+      })
+      .catch(function (error) {
+        sails.log.error("KongProxyController", "request error", error.response ? error.response.data : error.message);
+        return res.negotiate(error);
+      });
   }
 };

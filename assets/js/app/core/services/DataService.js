@@ -1,6 +1,6 @@
 /**
  * Generic data service to interact with Sails.js backend. This will just
- * wrap $sailsSocket methods to a single service, that is used from application.
+ * wrap $sails methods to a single service, that is used from application.
  *
  * This is needed because we need to make some common url handling for sails
  * endpoint.
@@ -10,11 +10,11 @@
 
   angular.module('frontend.core.services')
     .factory('DataService', [
-      '$sailsSocket','$http',
+      '$sails','$http',
       '_',
       'BackendConfig',
       function factory(
-        $sailsSocket,$http,
+        $sails,$http,
         _,
         BackendConfig
       ) {
@@ -59,8 +59,8 @@
            * @returns {Promise|*}
            */
           count: function count(endPoint, parameters) {
-            return $sailsSocket
-              .get(_parseEndPointUrl(endPoint) + '/count/', _parseParameters(parameters));
+            return $sails
+              .get(_parseEndPointUrl(endPoint) + '/count', _parseParameters(parameters));
           },
 
           /**
@@ -73,7 +73,7 @@
            * @returns {Promise|*}
            */
           collection: function collection(endPoint, parameters) {
-            return $sailsSocket
+            return $sails
               .get(_parseEndPointUrl(endPoint), _parseParameters(parameters));
           },
 
@@ -88,13 +88,13 @@
            * @returns {Promise|*}
            */
           fetch: function fetch(endPoint, identifier, parameters) {
-            return $sailsSocket
+            return $sails
               .get(_parseEndPointUrl(endPoint, identifier), _parseParameters(parameters));
           },
 
 
           get: function get(endPoint, parameters) {
-            return $sailsSocket
+            return $sails
               .get(_parseEndPointUrl(endPoint), _parseParameters(parameters));
           },
 
@@ -107,7 +107,7 @@
            * @returns {Promise|*}
            */
           create: function create(endPoint, data) {
-            return $sailsSocket
+            return $sails
               .post(_parseEndPointUrl(endPoint), data);
           },
 
@@ -121,12 +121,12 @@
            * @returns {Promise|*}
            */
           update: function update(endPoint, identifier, data) {
-            return $sailsSocket
+            return $sails
               .put(_parseEndPointUrl(endPoint, identifier), data);
           },
 
 
-          // Change to http because kong doesn't allow PUT and $sailsSocket doesn't support PATCH
+          // Change to http because kong doesn't allow PUT and $sails doesn't support PATCH
           updateOrCreate: function update(endPoint, data) {
             return $http
                 .put(_parseEndPointUrl(endPoint), data);
@@ -141,7 +141,7 @@
            * @returns {Promise|*}
            */
           delete: function remove(endPoint, identifier) {
-            return $sailsSocket
+            return $sails
               .delete(_parseEndPointUrl(endPoint, identifier));
           }
         };

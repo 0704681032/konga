@@ -10,7 +10,7 @@
  * @returns {*}
  */
 module.exports = function isAdmin(request, response, next) {
-  sails.log.verbose(__filename + ':' + __line + ' [Policy.isAdmin() called]');
+  sails.log.verbose('[Policy.isAdmin() called]');
 
   if(process.env.NO_AUTH === 'true') {
     return next();
