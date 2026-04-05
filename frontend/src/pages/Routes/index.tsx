@@ -9,13 +9,14 @@ import {
 } from '@ant-design/icons';
 import kongApi from '../../api/kong';
 import { useAuthStore } from '../../stores/authStore';
-import type { KongRoute } from '../../types';
+import type { KongRoute, KongService } from '../../types';
 import { PROTOCOLS } from '../../utils/constants';
 import TagsInput from '../../components/TagsInput';
 
 const Routes: React.FC = () => {
   const navigate = useNavigate();
   const [routes, setRoutes] = React.useState<KongRoute[]>([]);
+  const [services, setServices] = React.useState<KongService[]>([]);
   const [loading, setLoading] = React.useState(false);
   const [modalOpen, setModalOpen] = React.useState(false);
   const [editingRoute, setEditingRoute] = React.useState<KongRoute | null>(null);
@@ -26,11 +27,15 @@ const Routes: React.FC = () => {
   const fetchRoutes = React.useCallback(async () => {
     setLoading(true);
     try {
-      const response = await kongApi.listRoutes();
-      setRoutes(response.data || []);
+      const [routesRes, servicesRes] = await Promise.all([
+        kongApi.listRoutes(),
+        kongApi.listServices(),
+      ]);
+      setRoutes(routesRes.data || []);
+      setServices(servicesRes.data || []);
       // Extract all existing tags for autocomplete
       const allTags = new Set<string>();
-      (response.data || []).forEach((r: KongRoute) => r.tags?.forEach(t => allTags.add(t)));
+      (routesRes.data || []).forEach((r: KongRoute) => r.tags?.forEach(t => allTags.add(t)));
       setExistingTags(Array.from(allTags));
     } catch {
       message.error('Failed to fetch routes');
@@ -281,8 +286,17 @@ const Routes: React.FC = () => {
             <Input placeholder="192.168.1.2:8080" />
           </Form.Item>
 
-          <Form.Item name="service" label="Service ID" help="The Service this Route is associated to.">
-            <Input placeholder="Service UUID (optional)" />
+          <Form.Item name="service" label="Service" help="The Service this Route is associated to. Routes without a Service can only be reached by other Routes.">
+            <Select
+              allowClear
+              showSearch
+              placeholder="Select a service"
+              optionFilterProp="label"
+              options={services.map(s => ({
+                value: s.id,
+                label: s.name || s.id.substring(0, 8),
+              }))}
+            />
           </Form.Item>
         </Form>
       </Modal>

@@ -10,7 +10,7 @@ import {
 } from '@ant-design/icons';
 import kongApi from '../../api/kong';
 import { useAuthStore } from '../../stores/authStore';
-import type { KongRoute, KongPlugin } from '../../types';
+import type { KongRoute, KongPlugin, KongService } from '../../types';
 import { PROTOCOLS } from '../../utils/constants';
 import TagsInput from '../../components/TagsInput';
 
@@ -19,6 +19,7 @@ const RouteDetail: React.FC = () => {
   const navigate = useNavigate();
   const [route, setRoute] = React.useState<KongRoute | null>(null);
   const [plugins, setPlugins] = React.useState<KongPlugin[]>([]);
+  const [services, setServices] = React.useState<KongService[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [editModalOpen, setEditModalOpen] = React.useState(false);
   const [rawViewOpen, setRawViewOpen] = React.useState(false);
@@ -29,12 +30,14 @@ const RouteDetail: React.FC = () => {
     if (!id) return;
     setLoading(true);
     try {
-      const [routeRes, pluginsRes] = await Promise.all([
+      const [routeRes, pluginsRes, servicesRes] = await Promise.all([
         kongApi.getRoute(id),
         kongApi.listRoutePlugins(id),
+        kongApi.listServices(),
       ]);
       setRoute(routeRes);
       setPlugins(pluginsRes.data || []);
+      setServices(servicesRes.data || []);
     } catch {
       message.error('Failed to fetch route details');
     } finally {
@@ -267,8 +270,17 @@ const RouteDetail: React.FC = () => {
           <Form.Item name="preserve_host" label="Preserve Host" help="Use the request Host header in the upstream request headers." valuePropName="checked">
             <Switch />
           </Form.Item>
-          <Form.Item name="service" label="Service ID" help="The Service this Route is associated to.">
-            <Input placeholder="Service UUID (optional)" />
+          <Form.Item name="service" label="Service" help="The Service this Route is associated to.">
+            <Select
+              allowClear
+              showSearch
+              placeholder="Select a service"
+              optionFilterProp="label"
+              options={services.map(s => ({
+                value: s.id,
+                label: s.name || s.id.substring(0, 8),
+              }))}
+            />
           </Form.Item>
         </Form>
       </Modal>
