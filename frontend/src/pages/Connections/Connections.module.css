@@ -1,0 +1,42 @@
+.container {
+  padding: 0;
+}
+
+.description {
+  color: #666;
+  margin-bottom: 16px;
+}
+
+.activeIcon {
+  font-size: 20px;
+  color: #52c41a;
+}
+
+.inactiveIcon {
+  font-size: 20px;
+  color: #d9d9d9;
+}
+
+.healthyIcon {
+  font-size: 18px;
+  color: #52c41a;
+}
+
+.unhealthyIcon {
+  font-size: 18px;
+  color: #ff4d4f;
+}
+
+.disabledIcon {
+  font-size: 18px;
+  color: #d9d9d9;
+  opacity: 0.5;
+}
+
+.activeRow {
+  background-color: #e6f7ff !important;
+}
+
+.activeRow:hover td {
+  background-color: #bae7ff !important;
+}

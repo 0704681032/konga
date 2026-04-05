@@ -12,8 +12,8 @@
 module.exports.security = {
   cors: {
     allRoutes: true,
-    allowOrigins: '*',
-    allowCredentials: false,
+    allowOrigins: ['http://localhost:5173', 'http://localhost:1337', 'http://127.0.0.1:5173', 'http://127.0.0.1:1337'],
+    allowCredentials: true,
     allowRequestMethods: 'GET, POST, PUT, DELETE, OPTIONS, HEAD, PATCH',
     allowRequestHeaders: 'content-type, access-control-allow-origin, authorization, kong-admin-url'
   }

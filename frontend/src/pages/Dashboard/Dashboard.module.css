@@ -1,0 +1,71 @@
+.dashboard {
+  padding: 0;
+}
+
+.welcome {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  text-align: center;
+}
+
+.welcomeImage {
+  width: 100px;
+  height: 100px;
+  margin-bottom: 24px;
+}
+
+.welcomeText {
+  color: #666;
+  font-size: 16px;
+  margin-bottom: 24px;
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+}
+
+.error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  text-align: center;
+}
+
+.infoTable {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.infoTable th {
+  text-align: left;
+  padding: 8px 0;
+  color: #666;
+  font-weight: 500;
+  width: 40%;
+}
+
+.infoTable td {
+  padding: 8px 0;
+  color: #333;
+}
+
+.totalRequests {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #f0f0f0;
+  text-align: right;
+  color: #666;
+}
+
+.pluginsList {
+  max-height: 200px;
+  overflow-y: auto;
+}
