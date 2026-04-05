@@ -4,7 +4,7 @@ import {
   Select, message, Popconfirm, Collapse, Switch, Tag
 } from 'antd';
 import {
-  PlusOutlined, EditOutlined, DeleteOutlined
+  PlusOutlined, EditOutlined, DeleteOutlined, HeartOutlined, HeartFilled, CheckCircleOutlined
 } from '@ant-design/icons';
 import kongApi from '../../api/kong';
 import { useAuthStore } from '../../stores/authStore';
@@ -154,6 +154,41 @@ const Upstreams: React.FC = () => {
     }
   };
 
+  const handleSetTargetHealthy = async (upstreamId: string, targetId: string) => {
+    try {
+      await kongApi.setTargetHealthy(upstreamId, targetId);
+      message.success('Target marked as healthy');
+      fetchUpstreams();
+    } catch {
+      message.error('Failed to set target healthy');
+    }
+  };
+
+  const handleSetTargetUnhealthy = async (upstreamId: string, targetId: string) => {
+    try {
+      await kongApi.setTargetUnhealthy(upstreamId, targetId);
+      message.success('Target marked as unhealthy');
+      fetchUpstreams();
+    } catch {
+      message.error('Failed to set target unhealthy');
+    }
+  };
+
+  const getHealthIcon = (health?: string) => {
+    switch (health) {
+      case 'HEALTHY':
+        return <span style={{ color: '#52c41a' }}><HeartFilled /> Healthy</span>;
+      case 'UNHEALTHY':
+        return <span style={{ color: '#ff4d4f' }}><HeartOutlined /> Unhealthy</span>;
+      case 'DNS_ERROR':
+        return <span style={{ color: '#ff4d4f' }}>DNS Error</span>;
+      case 'HEALTHCHECKS_OFF':
+        return <span style={{ color: '#999' }}><HeartOutlined /> Checks Off</span>;
+      default:
+        return <span style={{ color: '#999' }}>-</span>;
+    }
+  };
+
   const columns = [
     { title: 'Name', dataIndex: 'name', key: 'name' },
     { title: 'Algorithm', dataIndex: 'algorithm', key: 'algorithm' },
@@ -239,13 +274,35 @@ const Upstreams: React.FC = () => {
                   { title: 'Target', dataIndex: 'target', key: 'target' },
                   { title: 'Weight', dataIndex: 'weight', key: 'weight' },
                   {
+                    title: 'Health',
+                    dataIndex: 'health',
+                    key: 'health',
+                    render: (health: string) => getHealthIcon(health),
+                  },
+                  {
                     title: 'Actions',
                     key: 'actions',
-                    width: 80,
+                    width: 180,
                     render: (_: unknown, target: KongTarget) => (
-                      <Popconfirm title="Delete this target?" onConfirm={() => handleDeleteTarget(record.id, target.id)}>
-                        <Button size="small" danger icon={<DeleteOutlined />} />
-                      </Popconfirm>
+                      <Space size="small">
+                        <Button
+                          size="small"
+                          type="primary"
+                          ghost
+                          icon={<CheckCircleOutlined />}
+                          onClick={() => handleSetTargetHealthy(record.id, target.id)}
+                          title="Set healthy"
+                        />
+                        <Button
+                          size="small"
+                          icon={<HeartOutlined />}
+                          onClick={() => handleSetTargetUnhealthy(record.id, target.id)}
+                          title="Set unhealthy"
+                        />
+                        <Popconfirm title="Delete this target?" onConfirm={() => handleDeleteTarget(record.id, target.id)}>
+                          <Button size="small" danger icon={<DeleteOutlined />} />
+                        </Popconfirm>
+                      </Space>
                     ),
                   },
                 ]}

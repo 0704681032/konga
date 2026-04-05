@@ -166,6 +166,20 @@ const kongApi = {
     await kongClient.delete(`/upstreams/${upstreamId}/targets/${targetId}`);
   },
 
+  // Target health
+  setTargetHealthy: async (upstreamId: string, targetId: string) => {
+    const response = await kongClient.put<KongTarget>(`/upstreams/${upstreamId}/targets/${targetId}/healthy`);
+    return response.data;
+  },
+  setTargetUnhealthy: async (upstreamId: string, targetId: string) => {
+    const response = await kongClient.put<KongTarget>(`/upstreams/${upstreamId}/targets/${targetId}/unhealthy`);
+    return response.data;
+  },
+  listTargetHealth: async (upstreamId: string) => {
+    const response = await kongClient.get<{ data: KongTarget[] }>(`/upstreams/${upstreamId}/targets/healthy`);
+    return response.data;
+  },
+
   // Certificates
   listCertificates: async (params?: Record<string, unknown>) => {
     const response = await kongClient.get<{ data: KongCertificate[]; next?: string }>('/certificates', { params });

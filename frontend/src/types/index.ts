@@ -184,6 +184,7 @@ export interface KongTarget {
   weight?: number;
   upstream?: { id: string };
   tags?: string[];
+  health?: 'HEALTHY' | 'UNHEALTHY' | 'DNS_ERROR' | 'HEALTHCHECKS_OFF';
   created_at?: number;
 }
 
