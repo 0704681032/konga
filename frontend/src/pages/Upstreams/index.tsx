@@ -9,6 +9,7 @@ import {
 import kongApi from '../../api/kong';
 import { useAuthStore } from '../../stores/authStore';
 import type { KongUpstream, KongTarget } from '../../types';
+import TagsInput from '../../components/TagsInput';
 
 const Upstreams: React.FC = () => {
   const [upstreams, setUpstreams] = React.useState<KongUpstream[]>([]);
@@ -18,6 +19,7 @@ const Upstreams: React.FC = () => {
   const [targetModalOpen, setTargetModalOpen] = React.useState(false);
   const [selectedUpstream, setSelectedUpstream] = React.useState<KongUpstream | null>(null);
   const [editingUpstream, setEditingUpstream] = React.useState<KongUpstream | null>(null);
+  const [existingTags, setExistingTags] = React.useState<string[]>([]);
   const [form] = Form.useForm();
   const [targetForm] = Form.useForm();
   const { hasPermission } = useAuthStore();
@@ -27,6 +29,10 @@ const Upstreams: React.FC = () => {
     try {
       const response = await kongApi.listUpstreams();
       setUpstreams(response.data || []);
+      // Extract all existing tags for autocomplete
+      const allTags = new Set<string>();
+      (response.data || []).forEach((u: KongUpstream) => u.tags?.forEach(t => allTags.add(t)));
+      setExistingTags(Array.from(allTags));
       const targetsMap: Record<string, KongTarget[]> = {};
       for (const upstream of response.data || []) {
         try {
@@ -56,6 +62,7 @@ const Upstreams: React.FC = () => {
       slots: 10000,
       hash_on: 'none',
       hash_fallback: 'none',
+      tags: [],
     });
     setModalOpen(true);
   };
@@ -64,7 +71,7 @@ const Upstreams: React.FC = () => {
     setEditingUpstream(upstream);
     form.setFieldsValue({
       ...upstream,
-      tags: upstream.tags?.join(', '),
+      tags: upstream.tags || [],
     });
     setModalOpen(true);
   };
@@ -101,7 +108,6 @@ const Upstreams: React.FC = () => {
 
       const data = {
         ...values,
-        tags: values.tags ? String(values.tags).split(',').map(t => t.trim()).filter(Boolean) : undefined,
         healthchecks: values.healthchecks ? cleanObject(values.healthchecks as Record<string, unknown>) : undefined,
       };
 
@@ -328,8 +334,11 @@ const Upstreams: React.FC = () => {
             <Input placeholder="Upstream name" />
           </Form.Item>
 
-          <Form.Item name="tags" label="Tags" help="Comma-separated values">
-            <Input placeholder="tag1, tag2, tag3" />
+          <Form.Item name="tags" label="Tags">
+            <TagsInput
+              existingTags={existingTags}
+              help="Optionally add tags to the upstream"
+            />
           </Form.Item>
 
           <Form.Item name="algorithm" label="Algorithm">

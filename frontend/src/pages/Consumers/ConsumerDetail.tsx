@@ -11,6 +11,7 @@ import {
 import kongApi from '../../api/kong';
 import { useAuthStore } from '../../stores/authStore';
 import type { KongConsumer } from '../../types';
+import TagsInput from '../../components/TagsInput';
 
 // Types
 interface AclGroup {
@@ -145,7 +146,7 @@ const ConsumerDetail: React.FC = () => {
     if (!consumer) return;
     form.setFieldsValue({
       ...consumer,
-      tags: consumer.tags?.join(', '),
+      tags: consumer.tags || [],
     });
     setEditModalOpen(true);
   };
@@ -153,10 +154,7 @@ const ConsumerDetail: React.FC = () => {
   const handleUpdate = async (values: Record<string, unknown>) => {
     if (!consumer) return;
     try {
-      const data = {
-        ...values,
-        tags: values.tags ? String(values.tags).split(',').map(t => t.trim()).filter(Boolean) : undefined,
-      };
+      const data = { ...values };
       await kongApi.updateConsumer(consumer.id, data);
       message.success('Consumer updated');
       setEditModalOpen(false);
@@ -535,8 +533,8 @@ const ConsumerDetail: React.FC = () => {
           <Form.Item name="custom_id" label="Custom ID">
             <Input placeholder="Custom ID" />
           </Form.Item>
-          <Form.Item name="tags" label="Tags" help="Comma-separated values">
-            <Input placeholder="tag1, tag2, tag3" />
+          <Form.Item name="tags" label="Tags">
+            <TagsInput help="Optionally add tags to the consumer" />
           </Form.Item>
         </Form>
       </Modal>

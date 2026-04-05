@@ -11,6 +11,7 @@ import kongApi from '../../api/kong';
 import { useAuthStore } from '../../stores/authStore';
 import type { KongRoute } from '../../types';
 import { PROTOCOLS } from '../../utils/constants';
+import TagsInput from '../../components/TagsInput';
 
 const Routes: React.FC = () => {
   const navigate = useNavigate();
@@ -18,6 +19,7 @@ const Routes: React.FC = () => {
   const [loading, setLoading] = React.useState(false);
   const [modalOpen, setModalOpen] = React.useState(false);
   const [editingRoute, setEditingRoute] = React.useState<KongRoute | null>(null);
+  const [existingTags, setExistingTags] = React.useState<string[]>([]);
   const [form] = Form.useForm();
   const { hasPermission } = useAuthStore();
 
@@ -26,6 +28,10 @@ const Routes: React.FC = () => {
     try {
       const response = await kongApi.listRoutes();
       setRoutes(response.data || []);
+      // Extract all existing tags for autocomplete
+      const allTags = new Set<string>();
+      (response.data || []).forEach((r: KongRoute) => r.tags?.forEach(t => allTags.add(t)));
+      setExistingTags(Array.from(allTags));
     } catch {
       message.error('Failed to fetch routes');
     } finally {
@@ -46,6 +52,7 @@ const Routes: React.FC = () => {
       preserve_host: false,
       regex_priority: 0,
       https_redirect_status_code: 426,
+      tags: [],
     });
     setModalOpen(true);
   };
@@ -55,7 +62,7 @@ const Routes: React.FC = () => {
     form.setFieldsValue({
       ...route,
       service: route.service?.id,
-      tags: route.tags?.join(', '),
+      tags: route.tags || [],
       hosts: route.hosts?.join(', '),
       paths: route.paths?.join(', '),
       methods: route.methods?.join(', '),
@@ -98,7 +105,6 @@ const Routes: React.FC = () => {
       const data: Partial<KongRoute> = {
         ...values,
         service: values.service ? { id: String(values.service) } : undefined,
-        tags: parseArray(values.tags),
         hosts: parseArray(values.hosts),
         paths: parseArray(values.paths),
         methods: parseArray(values.methods),
@@ -213,8 +219,11 @@ const Routes: React.FC = () => {
             <Input placeholder="Route name" />
           </Form.Item>
 
-          <Form.Item name="tags" label="Tags" help="Comma-separated values">
-            <Input placeholder="tag1, tag2, tag3" />
+          <Form.Item name="tags" label="Tags">
+            <TagsInput
+              existingTags={existingTags}
+              help="Optionally add tags to the route"
+            />
           </Form.Item>
 
           <Form.Item name="protocols" label="Protocols">

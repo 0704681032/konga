@@ -12,6 +12,7 @@ import kongApi from '../../api/kong';
 import { useAuthStore } from '../../stores/authStore';
 import type { KongService, KongRoute, KongPlugin } from '../../types';
 import { PROTOCOLS } from '../../utils/constants';
+import TagsInput from '../../components/TagsInput';
 
 const ServiceDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -55,7 +56,7 @@ const ServiceDetail: React.FC = () => {
     if (!service) return;
     form.setFieldsValue({
       ...service,
-      tags: service.tags?.join(', '),
+      tags: service.tags || [],
       client_certificate: service.client_certificate?.id,
     });
     setEditModalOpen(true);
@@ -66,7 +67,6 @@ const ServiceDetail: React.FC = () => {
     try {
       const data = {
         ...values,
-        tags: values.tags ? String(values.tags).split(',').map(t => t.trim()).filter(Boolean) : undefined,
         client_certificate: values.client_certificate ? { id: String(values.client_certificate) } : undefined,
       };
       await kongApi.updateService(service.id, data);
@@ -300,8 +300,8 @@ const ServiceDetail: React.FC = () => {
           <Form.Item name="name" label="Name">
             <Input placeholder="Service name" />
           </Form.Item>
-          <Form.Item name="tags" label="Tags" help="Comma-separated values">
-            <Input placeholder="tag1, tag2, tag3" />
+          <Form.Item name="tags" label="Tags">
+            <TagsInput help="Optionally add tags to the service" />
           </Form.Item>
           <Form.Item name="protocol" label="Protocol">
             <Select options={PROTOCOLS.map(p => ({ value: p, label: p }))} />

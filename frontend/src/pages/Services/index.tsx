@@ -11,6 +11,7 @@ import kongApi from '../../api/kong';
 import { useAuthStore } from '../../stores/authStore';
 import type { KongService } from '../../types';
 import { PROTOCOLS } from '../../utils/constants';
+import TagsInput from '../../components/TagsInput';
 
 const Services: React.FC = () => {
   const navigate = useNavigate();
@@ -18,6 +19,7 @@ const Services: React.FC = () => {
   const [loading, setLoading] = React.useState(false);
   const [modalOpen, setModalOpen] = React.useState(false);
   const [editingService, setEditingService] = React.useState<KongService | null>(null);
+  const [existingTags, setExistingTags] = React.useState<string[]>([]);
   const [form] = Form.useForm();
   const { hasPermission } = useAuthStore();
 
@@ -26,6 +28,10 @@ const Services: React.FC = () => {
     try {
       const response = await kongApi.listServices();
       setServices(response.data || []);
+      // Extract all existing tags for autocomplete
+      const allTags = new Set<string>();
+      (response.data || []).forEach((s: KongService) => s.tags?.forEach(t => allTags.add(t)));
+      setExistingTags(Array.from(allTags));
     } catch {
       message.error('Failed to fetch services');
     } finally {
@@ -47,6 +53,7 @@ const Services: React.FC = () => {
       connect_timeout: 60000,
       write_timeout: 60000,
       read_timeout: 60000,
+      tags: [],
     });
     setModalOpen(true);
   };
@@ -55,7 +62,7 @@ const Services: React.FC = () => {
     setEditingService(service);
     form.setFieldsValue({
       ...service,
-      tags: service.tags?.join(', '),
+      tags: service.tags || [],
       client_certificate: service.client_certificate?.id,
     });
     setModalOpen(true);
@@ -73,10 +80,8 @@ const Services: React.FC = () => {
 
   const handleSubmit = async (values: Record<string, unknown>) => {
     try {
-      // Parse tags from comma-separated string
       const data: Partial<KongService> = {
         ...values,
-        tags: values.tags ? String(values.tags).split(',').map(t => t.trim()).filter(Boolean) : undefined,
         client_certificate: values.client_certificate ? { id: String(values.client_certificate) } : undefined,
       };
 
@@ -159,8 +164,11 @@ const Services: React.FC = () => {
             <Input placeholder="Service name" />
           </Form.Item>
 
-          <Form.Item name="tags" label="Tags" help="Comma-separated values">
-            <Input placeholder="tag1, tag2, tag3" />
+          <Form.Item name="tags" label="Tags">
+            <TagsInput
+              existingTags={existingTags}
+              help="Optionally add tags to the service"
+            />
           </Form.Item>
 
           {!editingService && (

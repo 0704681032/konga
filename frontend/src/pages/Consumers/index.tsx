@@ -10,6 +10,7 @@ import {
 import kongApi from '../../api/kong';
 import { useAuthStore } from '../../stores/authStore';
 import type { KongConsumer } from '../../types';
+import TagsInput from '../../components/TagsInput';
 
 const Consumers: React.FC = () => {
   const navigate = useNavigate();
@@ -17,6 +18,7 @@ const Consumers: React.FC = () => {
   const [loading, setLoading] = React.useState(false);
   const [modalOpen, setModalOpen] = React.useState(false);
   const [editingConsumer, setEditingConsumer] = React.useState<KongConsumer | null>(null);
+  const [existingTags, setExistingTags] = React.useState<string[]>([]);
   const [form] = Form.useForm();
   const { hasPermission } = useAuthStore();
 
@@ -25,6 +27,10 @@ const Consumers: React.FC = () => {
     try {
       const response = await kongApi.listConsumers();
       setConsumers(response.data || []);
+      // Extract all existing tags for autocomplete
+      const allTags = new Set<string>();
+      (response.data || []).forEach((c: KongConsumer) => c.tags?.forEach(t => allTags.add(t)));
+      setExistingTags(Array.from(allTags));
     } catch {
       message.error('Failed to fetch consumers');
     } finally {
@@ -39,6 +45,7 @@ const Consumers: React.FC = () => {
   const handleCreate = () => {
     setEditingConsumer(null);
     form.resetFields();
+    form.setFieldsValue({ tags: [] });
     setModalOpen(true);
   };
 
@@ -46,7 +53,7 @@ const Consumers: React.FC = () => {
     setEditingConsumer(consumer);
     form.setFieldsValue({
       ...consumer,
-      tags: consumer.tags?.join(', '),
+      tags: consumer.tags || [],
     });
     setModalOpen(true);
   };
@@ -63,10 +70,7 @@ const Consumers: React.FC = () => {
 
   const handleSubmit = async (values: Record<string, unknown>) => {
     try {
-      const data = {
-        ...values,
-        tags: values.tags ? String(values.tags).split(',').map(t => t.trim()).filter(Boolean) : undefined,
-      };
+      const data = { ...values };
       if (editingConsumer) {
         await kongApi.updateConsumer(editingConsumer.id, data);
         message.success('Consumer updated');
@@ -144,8 +148,11 @@ const Consumers: React.FC = () => {
           <Form.Item name="custom_id" label="Custom ID">
             <Input placeholder="Custom ID" />
           </Form.Item>
-          <Form.Item name="tags" label="Tags" help="Comma-separated values">
-            <Input placeholder="tag1, tag2, tag3" />
+          <Form.Item name="tags" label="Tags">
+            <TagsInput
+              existingTags={existingTags}
+              help="Optionally add tags to the consumer"
+            />
           </Form.Item>
         </Form>
       </Modal>

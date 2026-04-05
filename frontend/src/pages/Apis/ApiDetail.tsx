@@ -10,6 +10,7 @@ import {
 import kongApi from '../../api/kong';
 import { useAuthStore } from '../../stores/authStore';
 import type { KongApi, KongPlugin } from '../../types';
+import TagsInput from '../../components/TagsInput';
 
 const ApiDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -50,7 +51,7 @@ const ApiDetail: React.FC = () => {
       hosts: api.hosts?.join(', '),
       uris: api.uris?.join(', '),
       methods: api.methods?.join(', '),
-      tags: api.tags?.join(', '),
+      tags: api.tags || [],
     });
     setEditModalOpen(true);
   };
@@ -77,7 +78,6 @@ const ApiDetail: React.FC = () => {
         hosts: parseArray(values.hosts),
         uris: parseArray(values.uris),
         methods: parseArray(values.methods),
-        tags: parseArray(values.tags),
       };
 
       await kongApi.updateApi(id, data);
@@ -303,8 +303,8 @@ const ApiDetail: React.FC = () => {
           <Form.Item name="http_if_terminated" label="HTTP if Terminated" valuePropName="checked">
             <Switch />
           </Form.Item>
-          <Form.Item name="tags" label="Tags" help="Comma-separated values">
-            <Input placeholder="tag1, tag2, tag3" />
+          <Form.Item name="tags" label="Tags">
+            <TagsInput help="Optionally add tags to the API" />
           </Form.Item>
         </Form>
       </Modal>

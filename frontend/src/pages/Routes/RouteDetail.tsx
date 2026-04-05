@@ -12,6 +12,7 @@ import kongApi from '../../api/kong';
 import { useAuthStore } from '../../stores/authStore';
 import type { KongRoute, KongPlugin } from '../../types';
 import { PROTOCOLS } from '../../utils/constants';
+import TagsInput from '../../components/TagsInput';
 
 const RouteDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -50,7 +51,7 @@ const RouteDetail: React.FC = () => {
     form.setFieldsValue({
       ...route,
       service: route.service?.id,
-      tags: route.tags?.join(', '),
+      tags: route.tags || [],
       hosts: route.hosts?.join(', '),
       paths: route.paths?.join(', '),
       methods: route.methods?.join(', '),
@@ -67,7 +68,6 @@ const RouteDetail: React.FC = () => {
       const data: Partial<KongRoute> = {
         ...values,
         service: values.service ? { id: String(values.service) } : undefined,
-        tags: parseArray(values.tags),
         hosts: parseArray(values.hosts),
         paths: parseArray(values.paths),
         methods: parseArray(values.methods),
@@ -243,8 +243,8 @@ const RouteDetail: React.FC = () => {
           <Form.Item name="name" label="Name">
             <Input placeholder="Route name" />
           </Form.Item>
-          <Form.Item name="tags" label="Tags" help="Comma-separated values">
-            <Input placeholder="tag1, tag2, tag3" />
+          <Form.Item name="tags" label="Tags">
+            <TagsInput help="Optionally add tags to the route" />
           </Form.Item>
           <Form.Item name="protocols" label="Protocols">
             <Select mode="multiple" options={PROTOCOLS.map(p => ({ value: p, label: p }))} />
