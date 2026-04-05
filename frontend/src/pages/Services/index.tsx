@@ -2,10 +2,10 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Card, Table, Button, Space, Modal, Form, Input, InputNumber,
-  Select, message, Popconfirm, Tag, Drawer, Descriptions, Switch
+  Select, message, Popconfirm, Tag
 } from 'antd';
 import {
-  PlusOutlined, EditOutlined, DeleteOutlined, EyeOutlined
+  PlusOutlined, EditOutlined, DeleteOutlined
 } from '@ant-design/icons';
 import kongApi from '../../api/kong';
 import { useAuthStore } from '../../stores/authStore';
@@ -17,9 +17,7 @@ const Services: React.FC = () => {
   const [services, setServices] = React.useState<KongService[]>([]);
   const [loading, setLoading] = React.useState(false);
   const [modalOpen, setModalOpen] = React.useState(false);
-  const [drawerOpen, setDrawerOpen] = React.useState(false);
   const [editingService, setEditingService] = React.useState<KongService | null>(null);
-  const [viewingService, setViewingService] = React.useState<KongService | null>(null);
   const [form] = Form.useForm();
   const { hasPermission } = useAuthStore();
 
@@ -61,11 +59,6 @@ const Services: React.FC = () => {
       client_certificate: service.client_certificate?.id,
     });
     setModalOpen(true);
-  };
-
-  const handleView = (service: KongService) => {
-    setViewingService(service);
-    setDrawerOpen(true);
   };
 
   const handleDelete = async (id: string) => {
@@ -213,24 +206,6 @@ const Services: React.FC = () => {
           </Form.Item>
         </Form>
       </Modal>
-
-      <Drawer title="Service Details" open={drawerOpen} onClose={() => setDrawerOpen(false)} width={500}>
-        {viewingService && (
-          <Descriptions column={1} bordered size="small">
-            <Descriptions.Item label="ID">{viewingService.id}</Descriptions.Item>
-            <Descriptions.Item label="Name">{viewingService.name}</Descriptions.Item>
-            <Descriptions.Item label="Host">{viewingService.host}</Descriptions.Item>
-            <Descriptions.Item label="Port">{viewingService.port}</Descriptions.Item>
-            <Descriptions.Item label="Protocol">{viewingService.protocol}</Descriptions.Item>
-            <Descriptions.Item label="Path">{viewingService.path}</Descriptions.Item>
-            <Descriptions.Item label="Retries">{viewingService.retries}</Descriptions.Item>
-            <Descriptions.Item label="Connect Timeout">{viewingService.connect_timeout} ms</Descriptions.Item>
-            <Descriptions.Item label="Write Timeout">{viewingService.write_timeout} ms</Descriptions.Item>
-            <Descriptions.Item label="Read Timeout">{viewingService.read_timeout} ms</Descriptions.Item>
-            <Descriptions.Item label="Tags">{viewingService.tags?.map(t => <Tag key={t}>{t}</Tag>)}</Descriptions.Item>
-          </Descriptions>
-        )}
-      </Drawer>
     </Card>
   );
 };

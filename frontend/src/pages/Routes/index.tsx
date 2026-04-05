@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Card, Table, Button, Space, Modal, Form, Input, Select,
-  message, Popconfirm, Tag, Drawer, Descriptions, Switch, InputNumber
+  message, Popconfirm, Tag, Switch, InputNumber
 } from 'antd';
 import {
   PlusOutlined, EditOutlined, DeleteOutlined
@@ -10,16 +10,14 @@ import {
 import kongApi from '../../api/kong';
 import { useAuthStore } from '../../stores/authStore';
 import type { KongRoute } from '../../types';
-import { PROTOCOLS, HTTP_METHODS } from '../../utils/constants';
+import { PROTOCOLS } from '../../utils/constants';
 
 const Routes: React.FC = () => {
   const navigate = useNavigate();
   const [routes, setRoutes] = React.useState<KongRoute[]>([]);
   const [loading, setLoading] = React.useState(false);
   const [modalOpen, setModalOpen] = React.useState(false);
-  const [drawerOpen, setDrawerOpen] = React.useState(false);
   const [editingRoute, setEditingRoute] = React.useState<KongRoute | null>(null);
-  const [viewingRoute, setViewingRoute] = React.useState<KongRoute | null>(null);
   const [form] = Form.useForm();
   const { hasPermission } = useAuthStore();
 
@@ -69,11 +67,6 @@ const Routes: React.FC = () => {
     setModalOpen(true);
   };
 
-  const handleView = (route: KongRoute) => {
-    setViewingRoute(route);
-    setDrawerOpen(true);
-  };
-
   const handleDelete = async (id: string) => {
     try {
       await kongApi.deleteRoute(id);
@@ -102,9 +95,9 @@ const Routes: React.FC = () => {
         return Object.keys(result).length > 0 ? result : undefined;
       };
 
-      const data = {
+      const data: Partial<KongRoute> = {
         ...values,
-        service: values.service ? { id: values.service } : undefined,
+        service: values.service ? { id: String(values.service) } : undefined,
         tags: parseArray(values.tags),
         hosts: parseArray(values.hosts),
         paths: parseArray(values.paths),
@@ -284,25 +277,6 @@ const Routes: React.FC = () => {
           </Form.Item>
         </Form>
       </Modal>
-
-      <Drawer title="Route Details" open={drawerOpen} onClose={() => setDrawerOpen(false)} width={500}>
-        {viewingRoute && (
-          <Descriptions column={1} bordered size="small">
-            <Descriptions.Item label="ID">{viewingRoute.id}</Descriptions.Item>
-            <Descriptions.Item label="Name">{viewingRoute.name}</Descriptions.Item>
-            <Descriptions.Item label="Protocols">{viewingRoute.protocols?.join(', ')}</Descriptions.Item>
-            <Descriptions.Item label="Methods">{viewingRoute.methods?.join(', ')}</Descriptions.Item>
-            <Descriptions.Item label="Paths">{viewingRoute.paths?.join(', ')}</Descriptions.Item>
-            <Descriptions.Item label="Hosts">{viewingRoute.hosts?.join(', ')}</Descriptions.Item>
-            <Descriptions.Item label="Strip Path">{viewingRoute.strip_path ? 'Yes' : 'No'}</Descriptions.Item>
-            <Descriptions.Item label="Preserve Host">{viewingRoute.preserve_host ? 'Yes' : 'No'}</Descriptions.Item>
-            <Descriptions.Item label="Regex Priority">{viewingRoute.regex_priority}</Descriptions.Item>
-            <Descriptions.Item label="HTTPS Redirect">{viewingRoute.https_redirect_status_code}</Descriptions.Item>
-            <Descriptions.Item label="Service">{viewingRoute.service?.id}</Descriptions.Item>
-            <Descriptions.Item label="Tags">{viewingRoute.tags?.join(', ')}</Descriptions.Item>
-          </Descriptions>
-        )}
-      </Drawer>
     </Card>
   );
 };

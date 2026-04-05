@@ -21,6 +21,8 @@ const Certificates = lazy(() => import('./pages/Certificates'));
 const Snapshots = lazy(() => import('./pages/Snapshots'));
 const Users = lazy(() => import('./pages/Users'));
 const Settings = lazy(() => import('./pages/Settings'));
+const Apis = lazy(() => import('./pages/Apis'));
+const ApiDetail = lazy(() => import('./pages/Apis/ApiDetail'));
 
 // Loading component
 const PageLoader = () => (
@@ -158,6 +160,27 @@ export const router = createBrowserRouter([
             <Plugins />
           </Suspense>
         ),
+      },
+      {
+        path: 'apis',
+        children: [
+          {
+            index: true,
+            element: (
+              <Suspense fallback={<PageLoader />}>
+                <Apis />
+              </Suspense>
+            ),
+          },
+          {
+            path: ':id',
+            element: (
+              <Suspense fallback={<PageLoader />}>
+                <ApiDetail />
+              </Suspense>
+            ),
+          },
+        ],
       },
       {
         path: 'upstreams',

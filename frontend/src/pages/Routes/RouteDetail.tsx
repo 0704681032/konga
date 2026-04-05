@@ -10,7 +10,7 @@ import {
 } from '@ant-design/icons';
 import kongApi from '../../api/kong';
 import { useAuthStore } from '../../stores/authStore';
-import type { KongRoute, KongPlugin, KongConsumer } from '../../types';
+import type { KongRoute, KongPlugin } from '../../types';
 import { PROTOCOLS } from '../../utils/constants';
 
 const RouteDetail: React.FC = () => {
@@ -64,9 +64,9 @@ const RouteDetail: React.FC = () => {
       const parseArray = (v: unknown): string[] | undefined =>
         v ? String(v).split(',').map(s => s.trim()).filter(Boolean) : undefined;
 
-      const data = {
+      const data: Partial<KongRoute> = {
         ...values,
-        service: values.service ? { id: values.service } : undefined,
+        service: values.service ? { id: String(values.service) } : undefined,
         tags: parseArray(values.tags),
         hosts: parseArray(values.hosts),
         paths: parseArray(values.paths),

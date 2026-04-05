@@ -1,7 +1,7 @@
 import React from 'react';
 import {
   Card, Table, Button, Space, Modal, Form, Input, InputNumber, Select,
-  Switch, message, Popconfirm, Tag, Drawer, Descriptions, Spin, Collapse, Divider
+  Switch, message, Popconfirm, Tag, Drawer, Descriptions, Spin
 } from 'antd';
 import {
   PlusOutlined, EditOutlined, DeleteOutlined, CodeOutlined

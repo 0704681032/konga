@@ -1,5 +1,15 @@
 // Navigation menu items
-export const MENU_ITEMS = [
+export interface MenuItem {
+  key: string;
+  label: string;
+  icon: string;
+  path: string;
+  permission?: string;
+  adminOnly?: boolean;
+  kong2Only?: boolean; // Only show for Kong 2.x and earlier
+}
+
+export const MENU_ITEMS: MenuItem[] = [
   {
     key: 'dashboard',
     label: 'Dashboard',
@@ -26,6 +36,14 @@ export const MENU_ITEMS = [
     icon: 'BranchesOutlined',
     path: '/routes',
     permission: 'routes',
+  },
+  {
+    key: 'apis',
+    label: 'APIs (Legacy)',
+    icon: 'ApiOutlined',
+    path: '/apis',
+    permission: 'apis',
+    kong2Only: true, // Only show for Kong 2.x and earlier (APIs deprecated in Kong 3.x)
   },
   {
     key: 'consumers',

@@ -11,7 +11,7 @@ import {
 import kongApi from '../../api/kong';
 import { useAuthStore } from '../../stores/authStore';
 import type { KongService, KongRoute, KongPlugin } from '../../types';
-import { PROTOCOLS, HTTP_METHODS } from '../../utils/constants';
+import { PROTOCOLS } from '../../utils/constants';
 
 const ServiceDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();

@@ -8,6 +8,7 @@ import type {
   KongUpstream,
   KongTarget,
   KongCertificate,
+  KongApi,
   GatewayInfo,
   KongStatus,
 } from '../types';
@@ -303,6 +304,33 @@ const kongApi = {
   },
   getConsumerRoutes: async (consumerId: string) => {
     const response = await apiClient.get<{ total: number; data: unknown[] }>(`/kong_consumers/${consumerId}/routes`);
+    return response.data;
+  },
+
+  // APIs (Legacy Kong 0.x - 2.x)
+  listApis: async (params?: Record<string, unknown>) => {
+    const response = await kongClient.get<{ data: KongApi[]; next?: string }>('/apis', { params });
+    return response.data;
+  },
+  getApi: async (id: string) => {
+    const response = await kongClient.get<KongApi>(`/apis/${id}`);
+    return response.data;
+  },
+  createApi: async (data: Partial<KongApi>) => {
+    const response = await kongClient.post<KongApi>('/apis', data);
+    return response.data;
+  },
+  updateApi: async (id: string, data: Partial<KongApi>) => {
+    const response = await kongClient.patch<KongApi>(`/apis/${id}`, data);
+    return response.data;
+  },
+  deleteApi: async (id: string) => {
+    await kongClient.delete(`/apis/${id}`);
+  },
+
+  // API Plugins (Legacy)
+  listApiPlugins: async (apiId: string) => {
+    const response = await kongClient.get<{ data: KongPlugin[] }>(`/apis/${apiId}/plugins`);
     return response.data;
   },
 };

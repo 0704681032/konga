@@ -42,7 +42,7 @@ const AppLayout: React.FC = () => {
   const location = useLocation();
 
   const { user, logout, hasPermission } = useAuthStore();
-  const { nodes, activeNode, fetchNodes } = useConnectionStore();
+  const { activeNode, fetchNodes } = useConnectionStore();
 
   // Fetch connections on mount to get active node
   React.useEffect(() => {
@@ -54,10 +54,21 @@ const AppLayout: React.FC = () => {
     navigate('/login');
   };
 
-  // Filter menu items based on permissions
+  // Helper function to check if Kong version is 3.x or higher
+  const isKong3xOrHigher = (): boolean => {
+    if (!activeNode?.kong_version) return false;
+    const version = activeNode.kong_version;
+    // Parse version string (e.g., "3.0.0", "2.8.1")
+    const majorVersion = parseInt(version.split('.')[0], 10);
+    return majorVersion >= 3;
+  };
+
+  // Filter menu items based on permissions and Kong version
   const menuItems = MENU_ITEMS.filter(item => {
     if (item.adminOnly && !user?.admin) return false;
     if (item.permission && !hasPermission(item.permission, 'read')) return false;
+    // Hide APIs menu for Kong 3.x and higher
+    if (item.kong2Only && isKong3xOrHigher()) return false;
     return true;
   }).map(item => ({
     key: item.path,

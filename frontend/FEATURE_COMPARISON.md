@@ -37,10 +37,18 @@ type: project
 - ✅ Plugins Tab (消费者专属插件)
 - ✅ 点击消费者名跳转到详情页
 
+### APIs 模块 - Kong 旧版兼容 (Kong 0.x - 2.x)
+- ✅ APIs 列表页面
+- ✅ API 详情页 (Details + Plugins Tabs)
+- ✅ CRUD 操作 (创建/编辑/删除)
+- ✅ Raw View 按钮
+- ✅ 根据 Kong 版本动态显示菜单 (Kong 3.x 自动隐藏)
+
 ### API 增强
 - ✅ ACL Groups API (listAcls, createAcl, deleteAcl)
 - ✅ Consumer Services API (getConsumerServices)
 - ✅ Consumer Routes API (getConsumerRoutes)
+- ✅ APIs Legacy API (listApis, createApi, updateApi, deleteApi)
 
 ---
 
@@ -63,7 +71,7 @@ type: project
 - ❌ 单独的 Add SNI 功能
 
 ### APIs 模块 - Kong 旧版兼容
-- ❌ 完全缺失 (Kong 0.x 版本兼容)
+- ✅ 已完成 (Kong 0.x - 2.x 版本兼容)
 
 ### Dashboard 页面
 - ❌ Timers 图表
@@ -100,7 +108,7 @@ type: project
 | Snapshots | View Details | ❌ 缺失 |
 | Certificates | View Details | ❌ 缺失 |
 | Certificates | Add SNI separately | ❌ 缺失 |
-| APIs 全部 | All buttons | ❌ 整个模块缺失 |
+| APIs 全部 | All buttons | ✅ 已实现 |
 
 ---
 
@@ -112,8 +120,12 @@ type: project
 | `frontend/src/pages/Services/ServiceDetail.tsx` | 服务详情页，支持 Routes/Plugins Tabs |
 | `frontend/src/pages/Routes/RouteDetail.tsx` | 路由详情页，支持 Plugins Tab |
 | `frontend/src/pages/Consumers/ConsumerDetail.tsx` | 消费者详情页，支持 Groups/Credentials/Services/Plugins Tabs |
-| `frontend/src/api/kong.ts` | 新增 ACL 和 Consumer Services API |
-| `frontend/src/router.tsx` | 更新路由配置支持详情页 |
+| `frontend/src/pages/Apis/index.tsx` | APIs 列表页 (Kong 2.x 兼容) |
+| `frontend/src/pages/Apis/ApiDetail.tsx` | API 详情页，支持 Plugins Tab |
+| `frontend/src/api/kong.ts` | 新增 ACL、Consumer Services、APIs Legacy API |
+| `frontend/src/router.tsx` | 更新路由配置支持详情页和 APIs |
+| `frontend/src/utils/constants.ts` | 新增 APIs 菜单项和 Kong 版本过滤 |
+| `frontend/src/components/Layout/AppLayout.tsx` | 根据 Kong 版本动态过滤菜单 |
 
 ---
 
@@ -122,7 +134,7 @@ type: project
 ### 可选实现 (低优先级)
 1. Services/Routes 详情页 Consumers Tab - 需要复杂的 ACL 判断逻辑
 2. Snapshots Scheduled Tab - 定时任务功能
-3. APIs 模块 - Kong 0.x 旧版兼容，现代 Kong 不需要
+3. Certificates 详情页和 SNI 管理 - 增强功能
 
 ### 不建议实现
 1. Dashboard Timers 图表 - 非核心功能

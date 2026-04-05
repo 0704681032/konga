@@ -20,11 +20,11 @@ interface AclGroup {
   created_at?: number;
 }
 
-interface KeyAuthCredential { id: string; key: string; created_at?: number }
-interface JwtCredential { id: string; key: string; secret: string; algorithm: string }
-interface BasicAuthCredential { id: string; username: string }
-interface Oauth2Credential { id: string; client_id: string; client_secret: string; redirect_uris?: string[] }
-interface HmacCredential { id: string; username: string; secret: string }
+interface KeyAuthCredential { id: string; key: string; created_at?: number; [key: string]: unknown }
+interface JwtCredential { id: string; key: string; secret: string; algorithm: string; [key: string]: unknown }
+interface BasicAuthCredential { id: string; username: string; [key: string]: unknown }
+interface Oauth2Credential { id: string; client_id: string; client_secret: string; redirect_uris?: string[]; [key: string]: unknown }
+interface HmacCredential { id: string; username: string; secret: string; [key: string]: unknown }
 
 const ConsumerDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();

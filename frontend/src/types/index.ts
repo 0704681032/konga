@@ -197,6 +197,27 @@ export interface KongCertificate {
   created_at?: number;
 }
 
+// Kong API (legacy, Kong 0.x - 2.x)
+export interface KongApi {
+  id: string;
+  name?: string;
+  upstream_url: string;
+  hosts?: string[];
+  uris?: string[];
+  methods?: string[];
+  strip_uri?: boolean;
+  preserve_host?: boolean;
+  retries?: number;
+  upstream_connect_timeout?: number;
+  upstream_send_timeout?: number;
+  upstream_read_timeout?: number;
+  https_only?: boolean;
+  http_if_terminated?: boolean;
+  tags?: string[];
+  created_at?: number;
+  updated_at?: number;
+}
+
 // Settings types
 export interface Settings {
   id: number;
