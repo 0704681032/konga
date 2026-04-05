@@ -52,7 +52,22 @@ const Snapshots: React.FC = () => {
   };
 
   const handleDownload = async (id: number) => {
-    window.open(`/api/snapshots/${id}/download`, '_blank');
+    try {
+      const response = await apiClient.get(`/snapshots/${id}/download`, {
+        responseType: 'blob'
+      });
+      // Create download link
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `snapshot_${id}.json`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch {
+      message.error('Failed to download snapshot');
+    }
   };
 
   const handleDelete = async (id: number) => {
