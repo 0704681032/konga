@@ -1,7 +1,7 @@
 import React from 'react';
 import {
   Card, Table, Button, Space, Modal, Form, Input, Select,
-  message, Popconfirm, Tag, Drawer, Descriptions, Switch
+  message, Popconfirm, Tag, Drawer, Descriptions, Switch, InputNumber
 } from 'antd';
 import {
   PlusOutlined, EditOutlined, DeleteOutlined, EyeOutlined
@@ -40,7 +40,13 @@ const Routes: React.FC = () => {
   const handleCreate = () => {
     setEditingRoute(null);
     form.resetFields();
-    form.setFieldsValue({ protocols: ['http', 'https'], strip_path: true, preserve_host: false });
+    form.setFieldsValue({
+      protocols: ['http', 'https'],
+      strip_path: true,
+      preserve_host: false,
+      regex_priority: 0,
+      https_redirect_status_code: 426,
+    });
     setModalOpen(true);
   };
 
@@ -48,7 +54,15 @@ const Routes: React.FC = () => {
     setEditingRoute(route);
     form.setFieldsValue({
       ...route,
-      service: route.service?.id, // Extract service ID from object
+      service: route.service?.id,
+      tags: route.tags?.join(', '),
+      hosts: route.hosts?.join(', '),
+      paths: route.paths?.join(', '),
+      methods: route.methods?.join(', '),
+      headers: route.headers ? Object.entries(route.headers).map(([k, v]) => `${k}:${(v as string[]).join(',')}`).join(', ') : '',
+      snis: (route as unknown as Record<string, string[]>).snis?.join(', '),
+      sources: (route as unknown as Record<string, string[]>).sources?.join(', '),
+      destinations: (route as unknown as Record<string, string[]>).destinations?.join(', '),
     });
     setModalOpen(true);
   };
@@ -68,13 +82,43 @@ const Routes: React.FC = () => {
     }
   };
 
-  const handleSubmit = async (values: Partial<KongRoute>) => {
+  const handleSubmit = async (values: Record<string, unknown>) => {
     try {
-      // Kong expects service to be { id: "..." } not a plain string
+      // Parse comma-separated values into arrays
+      const parseArray = (v: unknown): string[] | undefined =>
+        v ? String(v).split(',').map(s => s.trim()).filter(Boolean) : undefined;
+
+      const parseHeaders = (v: unknown): Record<string, string[]> | undefined => {
+        if (!v) return undefined;
+        const result: Record<string, string[]> = {};
+        String(v).split(',').forEach(h => {
+          const [key, val] = h.trim().split(':');
+          if (key && val) {
+            result[key.trim()] = [val.trim()];
+          }
+        });
+        return Object.keys(result).length > 0 ? result : undefined;
+      };
+
       const data = {
         ...values,
         service: values.service ? { id: values.service } : undefined,
+        tags: parseArray(values.tags),
+        hosts: parseArray(values.hosts),
+        paths: parseArray(values.paths),
+        methods: parseArray(values.methods),
+        headers: parseHeaders(values.headers),
+        snis: parseArray(values.snis),
+        sources: parseArray(values.sources)?.map(s => {
+          const [ip, port] = s.split(':');
+          return { ip, port: port ? parseInt(port) : undefined };
+        }),
+        destinations: parseArray(values.destinations)?.map(s => {
+          const [ip, port] = s.split(':');
+          return { ip, port: port ? parseInt(port) : undefined };
+        }),
       };
+
       if (editingRoute) {
         await kongApi.updateRoute(editingRoute.id, data);
         message.success('Route updated');
@@ -116,6 +160,12 @@ const Routes: React.FC = () => {
       render: (hosts: string[]) => hosts?.join(', ')
     },
     {
+      title: 'Tags',
+      dataIndex: 'tags',
+      key: 'tags',
+      render: (tags: string[]) => tags?.map(t => <Tag key={t} color="blue">{t}</Tag>)
+    },
+    {
       title: 'Actions',
       key: 'actions',
       width: 150,
@@ -153,30 +203,72 @@ const Routes: React.FC = () => {
         open={modalOpen}
         onCancel={() => setModalOpen(false)}
         onOk={() => form.submit()}
-        width={700}
+        width={800}
       >
         <Form form={form} layout="vertical" onFinish={handleSubmit}>
           <Form.Item name="name" label="Name">
             <Input placeholder="Route name" />
           </Form.Item>
+
+          <Form.Item name="tags" label="Tags" help="Comma-separated values">
+            <Input placeholder="tag1, tag2, tag3" />
+          </Form.Item>
+
           <Form.Item name="protocols" label="Protocols">
             <Select mode="multiple" options={PROTOCOLS.map(p => ({ value: p, label: p }))} />
           </Form.Item>
-          <Form.Item name="methods" label="Methods">
-            <Select mode="multiple" options={HTTP_METHODS.map(m => ({ value: m, label: m }))} />
+
+          <Form.Item name="methods" label="Methods" help="Comma-separated: GET, POST, PUT, DELETE, etc.">
+            <Select mode="tags" placeholder="GET, POST, PUT" tokenSeparators={[',']} />
           </Form.Item>
-          <Form.Item name="paths" label="Paths">
-            <Select mode="tags" placeholder="Enter paths" tokenSeparators={[',']} />
+
+          <Form.Item name="hosts" label="Hosts" help="Comma-separated domain names">
+            <Input placeholder="example.com, api.example.com" />
           </Form.Item>
-          <Form.Item name="hosts" label="Hosts">
-            <Select mode="tags" placeholder="Enter hosts" tokenSeparators={[',']} />
+
+          <Form.Item name="paths" label="Paths" help="Comma-separated paths">
+            <Input placeholder="/api, /v1/users" />
           </Form.Item>
+
+          <Form.Item name="headers" label="Headers" help="Format: header-name:value1,value2">
+            <Input placeholder="x-custom-header:foo,bar" />
+          </Form.Item>
+
+          <Form.Item name="regex_priority" label="Regex Priority">
+            <InputNumber style={{ width: '100%' }} />
+          </Form.Item>
+
+          <Form.Item name="https_redirect_status_code" label="HTTPS Redirect Status Code">
+            <InputNumber min={300} max={399} style={{ width: '100%' }} />
+          </Form.Item>
+
+          <Form.Item name="path_handling" label="Path Handling">
+            <Select allowClear options={[
+              { value: 'v0', label: 'v0' },
+              { value: 'v1', label: 'v1' },
+            ]} />
+          </Form.Item>
+
           <Form.Item name="strip_path" label="Strip Path" valuePropName="checked">
             <Switch />
           </Form.Item>
+
           <Form.Item name="preserve_host" label="Preserve Host" valuePropName="checked">
             <Switch />
           </Form.Item>
+
+          <Form.Item name="snis" label="SNIs" help="Server Name Indication for TLS routing">
+            <Input placeholder="example.com" />
+          </Form.Item>
+
+          <Form.Item name="sources" label="Sources" help="IP sources for stream routing (ip:port)">
+            <Input placeholder="192.168.1.1:8080, 10.0.0.0/24:3000" />
+          </Form.Item>
+
+          <Form.Item name="destinations" label="Destinations" help="IP destinations for stream routing (ip:port)">
+            <Input placeholder="192.168.1.2:8080" />
+          </Form.Item>
+
           <Form.Item name="service" label="Service ID">
             <Input placeholder="Service ID (optional)" />
           </Form.Item>
@@ -192,6 +284,12 @@ const Routes: React.FC = () => {
             <Descriptions.Item label="Methods">{viewingRoute.methods?.join(', ')}</Descriptions.Item>
             <Descriptions.Item label="Paths">{viewingRoute.paths?.join(', ')}</Descriptions.Item>
             <Descriptions.Item label="Hosts">{viewingRoute.hosts?.join(', ')}</Descriptions.Item>
+            <Descriptions.Item label="Strip Path">{viewingRoute.strip_path ? 'Yes' : 'No'}</Descriptions.Item>
+            <Descriptions.Item label="Preserve Host">{viewingRoute.preserve_host ? 'Yes' : 'No'}</Descriptions.Item>
+            <Descriptions.Item label="Regex Priority">{viewingRoute.regex_priority}</Descriptions.Item>
+            <Descriptions.Item label="HTTPS Redirect">{viewingRoute.https_redirect_status_code}</Descriptions.Item>
+            <Descriptions.Item label="Service">{viewingRoute.service?.id}</Descriptions.Item>
+            <Descriptions.Item label="Tags">{viewingRoute.tags?.join(', ')}</Descriptions.Item>
           </Descriptions>
         )}
       </Drawer>

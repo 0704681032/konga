@@ -13,7 +13,12 @@
       "Bash(timeout 45 node app.js)",
       "Bash(grep -v \"DEPRECATION\\\\|sass-lang\\\\|^$\\\\|╵\\\\|╷\\\\│\" /tmp/konga-start.log)",
       "Bash(node:*)",
-      "Bash(npm ls:*)"
+      "Bash(npm ls:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(curl -s http://localhost:1337/api/kong/info)",
+      "Bash(curl -s http://localhost:1337/ -o /dev/null -w \"%{http_code}\")"
     ]
   }
 }

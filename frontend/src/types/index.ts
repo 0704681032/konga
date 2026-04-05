@@ -107,6 +107,7 @@ export interface KongService {
   read_timeout?: number;
   enabled?: boolean;
   tags?: string[];
+  client_certificate?: { id: string };
   created_at?: number;
   updated_at?: number;
 }
@@ -122,7 +123,12 @@ export interface KongRoute {
   regex_priority?: number;
   strip_path?: boolean;
   preserve_host?: boolean;
-  service?: { id: string };
+  path_handling?: 'v0' | 'v1';
+  https_redirect_status_code?: number;
+  snis?: string[];
+  sources?: Array<{ ip?: string; port?: number }>;
+  destinations?: Array<{ ip?: string; port?: number }>;
+  service?: { id: string; name?: string };
   tags?: string[];
   created_at?: number;
   updated_at?: number;

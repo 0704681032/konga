@@ -1,7 +1,7 @@
 import React from 'react';
 import {
   Card, Table, Button, Space, Modal, Form, Input, InputNumber,
-  Select, message, Popconfirm, Tag, Drawer, Descriptions
+  Select, message, Popconfirm, Tag, Drawer, Descriptions, Switch
 } from 'antd';
 import {
   PlusOutlined, EditOutlined, DeleteOutlined, EyeOutlined
@@ -40,13 +40,24 @@ const Services: React.FC = () => {
   const handleCreate = () => {
     setEditingService(null);
     form.resetFields();
-    form.setFieldsValue({ protocol: 'http', port: 80, retries: 5, connect_timeout: 60000 });
+    form.setFieldsValue({
+      protocol: 'http',
+      port: 80,
+      retries: 5,
+      connect_timeout: 60000,
+      write_timeout: 60000,
+      read_timeout: 60000,
+    });
     setModalOpen(true);
   };
 
   const handleEdit = (service: KongService) => {
     setEditingService(service);
-    form.setFieldsValue(service);
+    form.setFieldsValue({
+      ...service,
+      tags: service.tags?.join(', '),
+      client_certificate: service.client_certificate?.id,
+    });
     setModalOpen(true);
   };
 
@@ -65,13 +76,20 @@ const Services: React.FC = () => {
     }
   };
 
-  const handleSubmit = async (values: Partial<KongService>) => {
+  const handleSubmit = async (values: Record<string, unknown>) => {
     try {
+      // Parse tags from comma-separated string
+      const data: Partial<KongService> = {
+        ...values,
+        tags: values.tags ? String(values.tags).split(',').map(t => t.trim()).filter(Boolean) : undefined,
+        client_certificate: values.client_certificate ? { id: String(values.client_certificate) } : undefined,
+      };
+
       if (editingService) {
-        await kongApi.updateService(editingService.id, values);
+        await kongApi.updateService(editingService.id, data);
         message.success('Service updated');
       } else {
-        await kongApi.createService(values);
+        await kongApi.createService(data);
         message.success('Service created');
       }
       setModalOpen(false);
@@ -87,6 +105,12 @@ const Services: React.FC = () => {
     { title: 'Port', dataIndex: 'port', key: 'port' },
     { title: 'Protocol', dataIndex: 'protocol', key: 'protocol', render: (p: string) => <Tag>{p}</Tag> },
     { title: 'Path', dataIndex: 'path', key: 'path' },
+    {
+      title: 'Tags',
+      dataIndex: 'tags',
+      key: 'tags',
+      render: (tags: string[]) => tags?.map(t => <Tag key={t} color="blue">{t}</Tag>)
+    },
     {
       title: 'Actions',
       key: 'actions',
@@ -125,29 +149,57 @@ const Services: React.FC = () => {
         open={modalOpen}
         onCancel={() => setModalOpen(false)}
         onOk={() => form.submit()}
-        width={600}
+        width={700}
       >
         <Form form={form} layout="vertical" onFinish={handleSubmit}>
-          <Form.Item name="name" label="Name" rules={[{ required: true }]}>
+          <Form.Item name="name" label="Name">
             <Input placeholder="Service name" />
           </Form.Item>
-          <Form.Item name="host" label="Host" rules={[{ required: true }]}>
-            <Input placeholder="example.com" />
+
+          <Form.Item name="tags" label="Tags" help="Comma-separated values">
+            <Input placeholder="tag1, tag2, tag3" />
           </Form.Item>
-          <Form.Item name="port" label="Port">
-            <InputNumber min={1} max={65535} />
-          </Form.Item>
+
+          {!editingService && (
+            <Form.Item name="url" label="URL" help="Shorthand to set protocol, host, port and path at once">
+              <Input placeholder="http://example.com:8080/api" />
+            </Form.Item>
+          )}
+
           <Form.Item name="protocol" label="Protocol">
             <Select options={PROTOCOLS.map(p => ({ value: p, label: p }))} />
           </Form.Item>
+
+          <Form.Item name="host" label="Host" rules={[{ required: true, message: 'Host is required' }]}>
+            <Input placeholder="example.com" />
+          </Form.Item>
+
+          <Form.Item name="port" label="Port">
+            <InputNumber min={1} max={65535} style={{ width: '100%' }} />
+          </Form.Item>
+
           <Form.Item name="path" label="Path">
             <Input placeholder="/api" />
           </Form.Item>
+
           <Form.Item name="retries" label="Retries">
-            <InputNumber min={0} />
+            <InputNumber min={0} style={{ width: '100%' }} />
           </Form.Item>
+
           <Form.Item name="connect_timeout" label="Connect Timeout (ms)">
-            <InputNumber min={0} />
+            <InputNumber min={0} style={{ width: '100%' }} />
+          </Form.Item>
+
+          <Form.Item name="write_timeout" label="Write Timeout (ms)">
+            <InputNumber min={0} style={{ width: '100%' }} />
+          </Form.Item>
+
+          <Form.Item name="read_timeout" label="Read Timeout (ms)">
+            <InputNumber min={0} style={{ width: '100%' }} />
+          </Form.Item>
+
+          <Form.Item name="client_certificate" label="Client Certificate ID" help="Certificate to use for TLS handshake">
+            <Input placeholder="Certificate UUID" />
           </Form.Item>
         </Form>
       </Modal>
@@ -162,6 +214,10 @@ const Services: React.FC = () => {
             <Descriptions.Item label="Protocol">{viewingService.protocol}</Descriptions.Item>
             <Descriptions.Item label="Path">{viewingService.path}</Descriptions.Item>
             <Descriptions.Item label="Retries">{viewingService.retries}</Descriptions.Item>
+            <Descriptions.Item label="Connect Timeout">{viewingService.connect_timeout} ms</Descriptions.Item>
+            <Descriptions.Item label="Write Timeout">{viewingService.write_timeout} ms</Descriptions.Item>
+            <Descriptions.Item label="Read Timeout">{viewingService.read_timeout} ms</Descriptions.Item>
+            <Descriptions.Item label="Tags">{viewingService.tags?.map(t => <Tag key={t}>{t}</Tag>)}</Descriptions.Item>
           </Descriptions>
         )}
       </Drawer>
