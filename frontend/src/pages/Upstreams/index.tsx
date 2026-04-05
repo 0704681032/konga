@@ -1,7 +1,7 @@
 import React from 'react';
 import {
   Card, Table, Button, Space, Modal, Form, Input, InputNumber,
-  Select, message, Popconfirm
+  Select, message, Popconfirm, Collapse, Switch, Tag
 } from 'antd';
 import {
   PlusOutlined, EditOutlined, DeleteOutlined
@@ -27,7 +27,6 @@ const Upstreams: React.FC = () => {
     try {
       const response = await kongApi.listUpstreams();
       setUpstreams(response.data || []);
-      // Fetch targets for each upstream
       const targetsMap: Record<string, KongTarget[]> = {};
       for (const upstream of response.data || []) {
         try {
@@ -52,13 +51,21 @@ const Upstreams: React.FC = () => {
   const handleCreate = () => {
     setEditingUpstream(null);
     form.resetFields();
-    form.setFieldsValue({ algorithm: 'round-robin', slots: 10000 });
+    form.setFieldsValue({
+      algorithm: 'round-robin',
+      slots: 10000,
+      hash_on: 'none',
+      hash_fallback: 'none',
+    });
     setModalOpen(true);
   };
 
   const handleEdit = (upstream: KongUpstream) => {
     setEditingUpstream(upstream);
-    form.setFieldsValue(upstream);
+    form.setFieldsValue({
+      ...upstream,
+      tags: upstream.tags?.join(', '),
+    });
     setModalOpen(true);
   };
 
@@ -72,13 +79,18 @@ const Upstreams: React.FC = () => {
     }
   };
 
-  const handleSubmit = async (values: Partial<KongUpstream>) => {
+  const handleSubmit = async (values: Record<string, unknown>) => {
     try {
+      const data = {
+        ...values,
+        tags: values.tags ? String(values.tags).split(',').map(t => t.trim()).filter(Boolean) : undefined,
+      };
+
       if (editingUpstream) {
-        await kongApi.updateUpstream(editingUpstream.id, values);
+        await kongApi.updateUpstream(editingUpstream.id, data);
         message.success('Upstream updated');
       } else {
-        await kongApi.createUpstream(values);
+        await kongApi.createUpstream(data);
         message.success('Upstream created');
       }
       setModalOpen(false);
@@ -123,6 +135,12 @@ const Upstreams: React.FC = () => {
     { title: 'Algorithm', dataIndex: 'algorithm', key: 'algorithm' },
     { title: 'Slots', dataIndex: 'slots', key: 'slots' },
     {
+      title: 'Tags',
+      dataIndex: 'tags',
+      key: 'tags',
+      render: (tags: string[]) => tags?.map(t => <Tag key={t} color="blue">{t}</Tag>),
+    },
+    {
       title: 'Targets',
       key: 'targets',
       render: (_: unknown, record: KongUpstream) => (
@@ -146,6 +164,20 @@ const Upstreams: React.FC = () => {
         </Space>
       ),
     },
+  ];
+
+  const hashOnOptions = [
+    { value: 'none', label: 'None (Round Robin)' },
+    { value: 'consumer', label: 'Consumer' },
+    { value: 'ip', label: 'IP' },
+    { value: 'header', label: 'Header' },
+    { value: 'cookie', label: 'Cookie' },
+  ];
+
+  const algorithmOptions = [
+    { value: 'round-robin', label: 'Round Robin' },
+    { value: 'consistent-hashing', label: 'Consistent Hashing' },
+    { value: 'least-connections', label: 'Least Connections' },
   ];
 
   return (
@@ -208,23 +240,128 @@ const Upstreams: React.FC = () => {
         open={modalOpen}
         onCancel={() => setModalOpen(false)}
         onOk={() => form.submit()}
+        width={800}
       >
         <Form form={form} layout="vertical" onFinish={handleSubmit}>
           <Form.Item name="name" label="Name" rules={[{ required: true }]}>
             <Input placeholder="Upstream name" />
           </Form.Item>
+
+          <Form.Item name="tags" label="Tags" help="Comma-separated values">
+            <Input placeholder="tag1, tag2, tag3" />
+          </Form.Item>
+
           <Form.Item name="algorithm" label="Algorithm">
-            <Select
-              options={[
-                { value: 'round-robin', label: 'Round Robin' },
-                { value: 'consistent-hashing', label: 'Consistent Hashing' },
-                { value: 'least-connections', label: 'Least Connections' },
-              ]}
-            />
+            <Select options={algorithmOptions} />
           </Form.Item>
+
           <Form.Item name="slots" label="Slots">
-            <InputNumber min={10} max={65536} />
+            <InputNumber min={10} max={65536} style={{ width: '100%' }} />
           </Form.Item>
+
+          <Form.Item name="hash_on" label="Hash On">
+            <Select options={hashOnOptions} />
+          </Form.Item>
+
+          <Form.Item name="hash_fallback" label="Hash Fallback">
+            <Select options={hashOnOptions.filter(o => o.value !== 'cookie')} />
+          </Form.Item>
+
+          <Form.Item name="hash_on_header" label="Hash On Header" help="Required when hash_on is 'header'">
+            <Input placeholder="Header name" />
+          </Form.Item>
+
+          <Form.Item name="hash_fallback_header" label="Hash Fallback Header" help="Required when hash_fallback is 'header'">
+            <Input placeholder="Header name" />
+          </Form.Item>
+
+          <Form.Item name="hash_on_cookie" label="Hash On Cookie" help="Required when hash_on or hash_fallback is 'cookie'">
+            <Input placeholder="Cookie name" />
+          </Form.Item>
+
+          <Form.Item name="hash_on_cookie_path" label="Hash On Cookie Path">
+            <Input placeholder="/" />
+          </Form.Item>
+
+          <Collapse
+            items={[
+              {
+                key: 'healthchecks',
+                label: 'Health Checks (Advanced)',
+                children: (
+                  <>
+                    <h4>Active Health Checks</h4>
+                    <Form.Item name={['healthchecks', 'active', 'type']} label="Type">
+                      <Select allowClear options={[
+                        { value: 'http', label: 'HTTP' },
+                        { value: 'https', label: 'HTTPS' },
+                        { value: 'tcp', label: 'TCP' },
+                      ]} />
+                    </Form.Item>
+                    <Form.Item name={['healthchecks', 'active', 'http_path']} label="HTTP Path">
+                      <Input placeholder="/" />
+                    </Form.Item>
+                    <Form.Item name={['healthchecks', 'active', 'timeout']} label="Timeout (seconds)">
+                      <InputNumber min={0} style={{ width: '100%' }} />
+                    </Form.Item>
+                    <Form.Item name={['healthchecks', 'active', 'concurrency']} label="Concurrency">
+                      <InputNumber min={1} style={{ width: '100%' }} />
+                    </Form.Item>
+                    <Form.Item name={['healthchecks', 'active', 'https_verify_certificate']} label="Verify HTTPS Certificate" valuePropName="checked">
+                      <Switch />
+                    </Form.Item>
+
+                    <h5 style={{ marginTop: 16 }}>Healthy Thresholds</h5>
+                    <Form.Item name={['healthchecks', 'active', 'healthy', 'interval']} label="Interval (seconds)">
+                      <InputNumber min={0} style={{ width: '100%' }} />
+                    </Form.Item>
+                    <Form.Item name={['healthchecks', 'active', 'healthy', 'successes']} label="Successes">
+                      <InputNumber min={0} style={{ width: '100%' }} />
+                    </Form.Item>
+
+                    <h5>Unhealthy Thresholds</h5>
+                    <Form.Item name={['healthchecks', 'active', 'unhealthy', 'interval']} label="Interval (seconds)">
+                      <InputNumber min={0} style={{ width: '100%' }} />
+                    </Form.Item>
+                    <Form.Item name={['healthchecks', 'active', 'unhealthy', 'http_failures']} label="HTTP Failures">
+                      <InputNumber min={0} style={{ width: '100%' }} />
+                    </Form.Item>
+                    <Form.Item name={['healthchecks', 'active', 'unhealthy', 'tcp_failures']} label="TCP Failures">
+                      <InputNumber min={0} style={{ width: '100%' }} />
+                    </Form.Item>
+                    <Form.Item name={['healthchecks', 'active', 'unhealthy', 'timeouts']} label="Timeouts">
+                      <InputNumber min={0} style={{ width: '100%' }} />
+                    </Form.Item>
+
+                    <h4 style={{ marginTop: 24 }}>Passive Health Checks</h4>
+                    <Form.Item name={['healthchecks', 'passive', 'type']} label="Type">
+                      <Select allowClear options={[
+                        { value: 'http', label: 'HTTP' },
+                        { value: 'https', label: 'HTTPS' },
+                        { value: 'tcp', label: 'TCP' },
+                      ]} />
+                    </Form.Item>
+
+                    <h5>Healthy Thresholds</h5>
+                    <Form.Item name={['healthchecks', 'passive', 'healthy', 'successes']} label="Successes">
+                      <InputNumber min={0} style={{ width: '100%' }} />
+                    </Form.Item>
+
+                    <h5>Unhealthy Thresholds</h5>
+                    <Form.Item name={['healthchecks', 'passive', 'unhealthy', 'http_failures']} label="HTTP Failures">
+                      <InputNumber min={0} style={{ width: '100%' }} />
+                    </Form.Item>
+                    <Form.Item name={['healthchecks', 'passive', 'unhealthy', 'tcp_failures']} label="TCP Failures">
+                      <InputNumber min={0} style={{ width: '100%' }} />
+                    </Form.Item>
+                    <Form.Item name={['healthchecks', 'passive', 'unhealthy', 'timeouts']} label="Timeouts">
+                      <InputNumber min={0} style={{ width: '100%' }} />
+                    </Form.Item>
+                  </>
+                ),
+              },
+            ]}
+          />
         </Form>
       </Modal>
 
@@ -239,7 +376,7 @@ const Upstreams: React.FC = () => {
             <Input placeholder="host:port" />
           </Form.Item>
           <Form.Item name="weight" label="Weight" rules={[{ required: true }]}>
-            <InputNumber min={0} max={1000} />
+            <InputNumber min={0} max={1000} style={{ width: '100%' }} />
           </Form.Item>
         </Form>
       </Modal>

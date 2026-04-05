@@ -88,7 +88,10 @@ const Consumers: React.FC = () => {
 
   const handleEdit = (consumer: KongConsumer) => {
     setEditingConsumer(consumer);
-    form.setFieldsValue(consumer);
+    form.setFieldsValue({
+      ...consumer,
+      tags: consumer.tags?.join(', '),
+    });
     setModalOpen(true);
   };
 
@@ -108,13 +111,17 @@ const Consumers: React.FC = () => {
     }
   };
 
-  const handleSubmit = async (values: Partial<KongConsumer>) => {
+  const handleSubmit = async (values: Record<string, unknown>) => {
     try {
+      const data = {
+        ...values,
+        tags: values.tags ? String(values.tags).split(',').map(t => t.trim()).filter(Boolean) : undefined,
+      };
       if (editingConsumer) {
-        await kongApi.updateConsumer(editingConsumer.id, values);
+        await kongApi.updateConsumer(editingConsumer.id, data);
         message.success('Consumer updated');
       } else {
-        await kongApi.createConsumer(values);
+        await kongApi.createConsumer(data);
         message.success('Consumer created');
       }
       setModalOpen(false);
@@ -296,11 +303,14 @@ const Consumers: React.FC = () => {
         onOk={() => form.submit()}
       >
         <Form form={form} layout="vertical" onFinish={handleSubmit}>
-          <Form.Item name="username" label="Username" rules={[{ required: true }]}>
+          <Form.Item name="username" label="Username">
             <Input placeholder="Username" />
           </Form.Item>
           <Form.Item name="custom_id" label="Custom ID">
             <Input placeholder="Custom ID" />
+          </Form.Item>
+          <Form.Item name="tags" label="Tags" help="Comma-separated values">
+            <Input placeholder="tag1, tag2, tag3" />
           </Form.Item>
         </Form>
       </Modal>
