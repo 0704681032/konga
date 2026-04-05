@@ -40,6 +40,17 @@ const kongApi = {
     await kongClient.delete(`/services/${id}`);
   },
 
+  // Service-specific routes and plugins (Kong 3.x compatible)
+  listServiceRoutes: async (serviceId: string) => {
+    const response = await kongClient.get<{ data: KongRoute[] }>(`/services/${serviceId}/routes`);
+    return response.data;
+  },
+
+  listServicePlugins: async (serviceId: string) => {
+    const response = await kongClient.get<{ data: KongPlugin[] }>(`/services/${serviceId}/plugins`);
+    return response.data;
+  },
+
   // Routes
   listRoutes: async (params?: Record<string, unknown>) => {
     const response = await kongClient.get<{ data: KongRoute[]; next?: string }>('/routes', { params });
@@ -63,6 +74,12 @@ const kongApi = {
 
   deleteRoute: async (id: string) => {
     await kongClient.delete(`/routes/${id}`);
+  },
+
+  // Route-specific plugins (Kong 3.x compatible)
+  listRoutePlugins: async (routeId: string) => {
+    const response = await kongClient.get<{ data: KongPlugin[] }>(`/routes/${routeId}/plugins`);
+    return response.data;
   },
 
   // Consumers

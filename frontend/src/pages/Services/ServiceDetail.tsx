@@ -35,8 +35,8 @@ const ServiceDetail: React.FC = () => {
     try {
       const [serviceRes, routesRes, pluginsRes] = await Promise.all([
         kongApi.getService(id),
-        kongApi.listRoutes({ 'service.id': id }),
-        kongApi.listPlugins({ 'service.id': id }),
+        kongApi.listServiceRoutes(id),
+        kongApi.listServicePlugins(id),
       ]);
       setService(serviceRes);
       setRoutes(routesRes.data || []);

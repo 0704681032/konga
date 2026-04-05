@@ -31,7 +31,7 @@ const RouteDetail: React.FC = () => {
     try {
       const [routeRes, pluginsRes] = await Promise.all([
         kongApi.getRoute(id),
-        kongApi.listPlugins({ 'route.id': id }),
+        kongApi.listRoutePlugins(id),
       ]);
       setRoute(routeRes);
       setPlugins(pluginsRes.data || []);
