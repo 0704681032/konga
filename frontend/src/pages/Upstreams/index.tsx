@@ -81,16 +81,40 @@ const Upstreams: React.FC = () => {
 
   const handleSubmit = async (values: Record<string, unknown>) => {
     try {
+      // Clean up values - remove nulls, undefined, and empty strings
+      const cleanObject = (obj: Record<string, unknown>): Record<string, unknown> | undefined => {
+        const result: Record<string, unknown> = {};
+        for (const [key, value] of Object.entries(obj)) {
+          if (value !== null && value !== undefined && value !== '') {
+            if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+              const cleaned = cleanObject(value as Record<string, unknown>);
+              if (cleaned && Object.keys(cleaned).length > 0) {
+                result[key] = cleaned;
+              }
+            } else {
+              result[key] = value;
+            }
+          }
+        }
+        return Object.keys(result).length > 0 ? result : undefined;
+      };
+
       const data = {
         ...values,
         tags: values.tags ? String(values.tags).split(',').map(t => t.trim()).filter(Boolean) : undefined,
+        healthchecks: values.healthchecks ? cleanObject(values.healthchecks as Record<string, unknown>) : undefined,
       };
 
+      // Remove undefined values
+      const cleanData = Object.fromEntries(
+        Object.entries(data).filter(([_, v]) => v !== undefined)
+      );
+
       if (editingUpstream) {
-        await kongApi.updateUpstream(editingUpstream.id, data);
+        await kongApi.updateUpstream(editingUpstream.id, cleanData);
         message.success('Upstream updated');
       } else {
-        await kongApi.createUpstream(data);
+        await kongApi.createUpstream(cleanData);
         message.success('Upstream created');
       }
       setModalOpen(false);
