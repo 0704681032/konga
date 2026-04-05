@@ -4,7 +4,12 @@ import {
   Switch, message, Popconfirm, Tag, Drawer, Descriptions, Spin
 } from 'antd';
 import {
-  PlusOutlined, EditOutlined, DeleteOutlined, CodeOutlined
+  PlusOutlined, EditOutlined, DeleteOutlined, CodeOutlined,
+  SecurityScanOutlined, ApiOutlined, LockOutlined,
+  ThunderboltOutlined, GlobalOutlined, UserOutlined,
+  FileProtectOutlined, LinkOutlined, DatabaseOutlined, CloudOutlined,
+  SettingOutlined, WarningOutlined, CheckCircleOutlined, StopOutlined,
+  KeyOutlined, SafetyOutlined, SyncOutlined, FilterOutlined
 } from '@ant-design/icons';
 import kongApi from '../../api/kong';
 import { useAuthStore } from '../../stores/authStore';
@@ -237,6 +242,62 @@ const DynamicConfigForm: React.FC<{
   );
 };
 
+// Plugin icon mapping
+const PLUGIN_ICONS: Record<string, React.ReactNode> = {
+  // Authentication plugins
+  'key-auth': <KeyOutlined />,
+  'basic-auth': <LockOutlined />,
+  'jwt': <FileProtectOutlined />,
+  'oauth2': <SafetyOutlined />,
+  'hmac-auth': <SecurityScanOutlined />,
+  'ldap-auth': <UserOutlined />,
+  'session': <SecurityScanOutlined />,
+
+  // Security plugins
+  'acl': <LockOutlined />,
+  'cors': <GlobalOutlined />,
+  'ip-restriction': <StopOutlined />,
+  'bot-detection': <WarningOutlined />,
+  'rate-limiting': <ThunderboltOutlined />,
+  'request-size-limiting': <DatabaseOutlined />,
+  'response-ratelimiting': <ThunderboltOutlined />,
+  'security': <SafetyOutlined />,
+
+  // Traffic control plugins
+  'request-transformer': <SyncOutlined />,
+  'response-transformer': <SyncOutlined />,
+  'request-termination': <StopOutlined />,
+  'proxy-cache': <DatabaseOutlined />,
+  'canary': <FilterOutlined />,
+
+  // Transformation plugins
+  'correlation-id': <LinkOutlined />,
+  'grpc-web': <ApiOutlined />,
+  'websocket': <CloudOutlined />,
+
+  // Logging plugins
+  'file-log': <DatabaseOutlined />,
+  'http-log': <ApiOutlined />,
+  'tcp-log': <ApiOutlined />,
+  'udp-log': <ApiOutlined />,
+  'syslog': <DatabaseOutlined />,
+  'loggly': <DatabaseOutlined />,
+  'statsd': <DatabaseOutlined />,
+  'datadog': <DatabaseOutlined />,
+  'prometheus': <CheckCircleOutlined />,
+
+  // Analytics plugins
+  'galileo': <CloudOutlined />,
+  'kubernetes-sidecar': <CloudOutlined />,
+
+  // Default
+  'default': <SettingOutlined />,
+};
+
+const getPluginIcon = (name: string): React.ReactNode => {
+  return PLUGIN_ICONS[name] || PLUGIN_ICONS['default'];
+};
+
 const Plugins: React.FC = () => {
   const [plugins, setPlugins] = React.useState<KongPlugin[]>([]);
   const [availablePlugins, setAvailablePlugins] = React.useState<Array<{ name: string; description?: string }>>([]);
@@ -405,7 +466,10 @@ const Plugins: React.FC = () => {
       key: 'name',
       render: (name: string, record: KongPlugin) => (
         <a onClick={() => handleEdit(record)}>
-          <Tag color="blue">{name}</Tag>
+          <Space>
+            {getPluginIcon(name)}
+            <Tag color="blue">{name}</Tag>
+          </Space>
         </a>
       ),
     },

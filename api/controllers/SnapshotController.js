@@ -102,44 +102,40 @@ module.exports = _.merge(_.cloneDeep(require('../base/Controller')), {
   },
 
   snapshot: async (req, res) => {
-    // Get node
-    sails.models.kongnode.findOne({
-      id: req.query.node_id || req.params.node_id
-    }).exec(async (err, node) => {
-      if (err) return res.negotiate(err)
-      if (!node) return res.badRequest({
-        message: "Invalid Kong Node"
-      })
-      try {
-        const snapshot = await SnapshotsService.snapshot(req.body.name || req.query.name, node);
-        return res.json(snapshot);
-      } catch (e) {
-        return res.negotiate(e)
-      }
+    // Node is already set by dynamicNode policy
+    const node = req.connection;
 
-    });
+    if (!node) {
+      return res.badRequest({
+        message: "Invalid Kong Node"
+      });
+    }
+
+    try {
+      const snapshot = await SnapshotsService.snapshot(req.body.name || req.query.name, node);
+      return res.json(snapshot);
+    } catch (e) {
+      return res.negotiate(e);
+    }
   },
 
-  takeSnapShot: function (req, res) {
+  takeSnapShot: async function (req, res) {
+    // Node is already set by dynamicNode policy
+    const node = req.connection;
 
-    // Get node
-    sails.models.kongnode.findOne({
-      id: req.query.node_id || req.params.node_id
-    }).exec(function (err, node) {
-      if (err) return res.negotiate(err)
-      if (!node) return res.badRequest({
+    if (!node) {
+      return res.badRequest({
         message: "Invalid Kong Node"
-      })
-
-
-      res.ok(); // Reply directly because snapshot creation may take some time
-
-      SnapshotsService.takeSnapShot(req.body.name || req.query.name, node, function (err, ok) {
-        // Fire and forget.
-        // Everything is handled by events and socket messages.
-
       });
-    });
+    }
+
+    try {
+      const snapshot = await SnapshotsService.snapshot(req.body.name || req.query.name, node);
+      return res.json(snapshot);
+    } catch (e) {
+      sails.log.error('takeSnapShot error:', e);
+      return res.negotiate(e);
+    }
   },
 
   restore: async (req, res) => {
