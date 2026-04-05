@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Card, Table, Button, Space, Modal, Form, Input, Select,
-  message, Popconfirm, Tag, Switch, InputNumber
+  message, Popconfirm, Tag, Switch, InputNumber, Alert
 } from 'antd';
 import {
   PlusOutlined, EditOutlined, DeleteOutlined
@@ -12,6 +12,7 @@ import { useAuthStore } from '../../stores/authStore';
 import type { KongRoute, KongService } from '../../types';
 import { PROTOCOLS } from '../../utils/constants';
 import TagsInput from '../../components/TagsInput';
+import axios from 'axios';
 
 const Routes: React.FC = () => {
   const navigate = useNavigate();
@@ -107,12 +108,22 @@ const Routes: React.FC = () => {
         return Object.keys(result).length > 0 ? result : undefined;
       };
 
+      const hosts = parseArray(values.hosts);
+      const paths = parseArray(values.paths);
+      const methods = parseArray(values.methods);
+
+      // Validation: at least one of hosts, paths, or methods must be set
+      if (!hosts?.length && !paths?.length && !methods?.length) {
+        message.error('At least one of Hosts, Paths, or Methods must be set');
+        return;
+      }
+
       const data: Partial<KongRoute> = {
         ...values,
         service: values.service ? { id: String(values.service) } : undefined,
-        hosts: parseArray(values.hosts),
-        paths: parseArray(values.paths),
-        methods: parseArray(values.methods),
+        hosts,
+        paths,
+        methods,
         headers: parseHeaders(values.headers),
         snis: parseArray(values.snis),
         sources: parseArray(values.sources)?.map(s => {
@@ -134,8 +145,13 @@ const Routes: React.FC = () => {
       }
       setModalOpen(false);
       fetchRoutes();
-    } catch {
-      message.error('Failed to save route');
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response?.data) {
+        const kongError = error.response.data;
+        message.error(kongError.message || 'Failed to save route');
+      } else {
+        message.error('Failed to save route');
+      }
     }
   };
 
@@ -219,6 +235,12 @@ const Routes: React.FC = () => {
         onOk={() => form.submit()}
         width={800}
       >
+        <Alert
+          message="At least one of Hosts, Paths, or Methods is required"
+          type="info"
+          showIcon
+          style={{ marginBottom: 16 }}
+        />
         <Form form={form} layout="vertical" onFinish={handleSubmit}>
           <Form.Item name="name" label="Name" help="The name of the Route.">
             <Input placeholder="my-route" />
