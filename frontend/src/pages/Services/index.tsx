@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Card, Table, Button, Space, Modal, Form, Input, InputNumber,
   Select, message, Popconfirm, Tag, Drawer, Descriptions, Switch
@@ -12,6 +13,7 @@ import type { KongService } from '../../types';
 import { PROTOCOLS } from '../../utils/constants';
 
 const Services: React.FC = () => {
+  const navigate = useNavigate();
   const [services, setServices] = React.useState<KongService[]>([]);
   const [loading, setLoading] = React.useState(false);
   const [modalOpen, setModalOpen] = React.useState(false);
@@ -100,7 +102,16 @@ const Services: React.FC = () => {
   };
 
   const columns = [
-    { title: 'Name', dataIndex: 'name', key: 'name' },
+    {
+      title: 'Name',
+      dataIndex: 'name',
+      key: 'name',
+      render: (name: string, record: KongService) => (
+        <a onClick={() => navigate(`/services/${record.id}`)} style={{ fontWeight: 500 }}>
+          {name || record.id.substring(0, 8)}
+        </a>
+      )
+    },
     { title: 'Host', dataIndex: 'host', key: 'host' },
     { title: 'Port', dataIndex: 'port', key: 'port' },
     { title: 'Protocol', dataIndex: 'protocol', key: 'protocol', render: (p: string) => <Tag>{p}</Tag> },
@@ -114,10 +125,9 @@ const Services: React.FC = () => {
     {
       title: 'Actions',
       key: 'actions',
-      width: 150,
+      width: 100,
       render: (_: unknown, record: KongService) => (
         <Space>
-          <Button size="small" icon={<EyeOutlined />} onClick={() => handleView(record)} />
           {hasPermission('services', 'update') && (
             <Button size="small" icon={<EditOutlined />} onClick={() => handleEdit(record)} />
           )}

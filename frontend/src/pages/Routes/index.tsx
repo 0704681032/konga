@@ -1,10 +1,11 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Card, Table, Button, Space, Modal, Form, Input, Select,
   message, Popconfirm, Tag, Drawer, Descriptions, Switch, InputNumber
 } from 'antd';
 import {
-  PlusOutlined, EditOutlined, DeleteOutlined, EyeOutlined
+  PlusOutlined, EditOutlined, DeleteOutlined
 } from '@ant-design/icons';
 import kongApi from '../../api/kong';
 import { useAuthStore } from '../../stores/authStore';
@@ -12,6 +13,7 @@ import type { KongRoute } from '../../types';
 import { PROTOCOLS, HTTP_METHODS } from '../../utils/constants';
 
 const Routes: React.FC = () => {
+  const navigate = useNavigate();
   const [routes, setRoutes] = React.useState<KongRoute[]>([]);
   const [loading, setLoading] = React.useState(false);
   const [modalOpen, setModalOpen] = React.useState(false);
@@ -134,7 +136,16 @@ const Routes: React.FC = () => {
   };
 
   const columns = [
-    { title: 'Name', dataIndex: 'name', key: 'name' },
+    {
+      title: 'Name',
+      dataIndex: 'name',
+      key: 'name',
+      render: (name: string, record: KongRoute) => (
+        <a onClick={() => navigate(`/routes/${record.id}`)} style={{ fontWeight: 500 }}>
+          {name || record.id.substring(0, 8)}
+        </a>
+      )
+    },
     {
       title: 'Protocols',
       dataIndex: 'protocols',
@@ -168,10 +179,9 @@ const Routes: React.FC = () => {
     {
       title: 'Actions',
       key: 'actions',
-      width: 150,
+      width: 100,
       render: (_: unknown, record: KongRoute) => (
         <Space>
-          <Button size="small" icon={<EyeOutlined />} onClick={() => handleView(record)} />
           {hasPermission('routes', 'update') && (
             <Button size="small" icon={<EditOutlined />} onClick={() => handleEdit(record)} />
           )}

@@ -282,6 +282,29 @@ const kongApi = {
   deleteHmacAuth: async (consumerId: string, hmacId: string) => {
     await kongClient.delete(`/consumers/${consumerId}/hmac-auth/${hmacId}`);
   },
+
+  // ACL Groups
+  listAcls: async (consumerId: string) => {
+    const response = await kongClient.get<{ data: { id: string; group: string; consumer: { id: string }; created_at: number }[] }>(`/consumers/${consumerId}/acls`);
+    return response.data;
+  },
+  createAcl: async (consumerId: string, data: { group: string }) => {
+    const response = await kongClient.post<{ id: string; group: string }>(`/consumers/${consumerId}/acls`, data);
+    return response.data;
+  },
+  deleteAcl: async (consumerId: string, aclId: string) => {
+    await kongClient.delete(`/consumers/${consumerId}/acls/${aclId}`);
+  },
+
+  // Consumer Services & Routes (via backend API)
+  getConsumerServices: async (consumerId: string) => {
+    const response = await apiClient.get<{ total: number; data: unknown[] }>(`/kong_consumers/${consumerId}/services`);
+    return response.data;
+  },
+  getConsumerRoutes: async (consumerId: string) => {
+    const response = await apiClient.get<{ total: number; data: unknown[] }>(`/kong_consumers/${consumerId}/routes`);
+    return response.data;
+  },
 };
 
 export default kongApi;

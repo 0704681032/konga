@@ -10,8 +10,11 @@ const Register = lazy(() => import('./pages/Auth/Register'));
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 const Connections = lazy(() => import('./pages/Connections'));
 const Services = lazy(() => import('./pages/Services'));
+const ServiceDetail = lazy(() => import('./pages/Services/ServiceDetail'));
 const Routes = lazy(() => import('./pages/Routes'));
+const RouteDetail = lazy(() => import('./pages/Routes/RouteDetail'));
 const Consumers = lazy(() => import('./pages/Consumers'));
+const ConsumerDetail = lazy(() => import('./pages/Consumers/ConsumerDetail'));
 const Plugins = lazy(() => import('./pages/Plugins'));
 const Upstreams = lazy(() => import('./pages/Upstreams'));
 const Certificates = lazy(() => import('./pages/Certificates'));
@@ -87,27 +90,66 @@ export const router = createBrowserRouter([
       },
       {
         path: 'services',
-        element: (
-          <Suspense fallback={<PageLoader />}>
-            <Services />
-          </Suspense>
-        ),
+        children: [
+          {
+            index: true,
+            element: (
+              <Suspense fallback={<PageLoader />}>
+                <Services />
+              </Suspense>
+            ),
+          },
+          {
+            path: ':id',
+            element: (
+              <Suspense fallback={<PageLoader />}>
+                <ServiceDetail />
+              </Suspense>
+            ),
+          },
+        ],
       },
       {
         path: 'routes',
-        element: (
-          <Suspense fallback={<PageLoader />}>
-            <Routes />
-          </Suspense>
-        ),
+        children: [
+          {
+            index: true,
+            element: (
+              <Suspense fallback={<PageLoader />}>
+                <Routes />
+              </Suspense>
+            ),
+          },
+          {
+            path: ':id',
+            element: (
+              <Suspense fallback={<PageLoader />}>
+                <RouteDetail />
+              </Suspense>
+            ),
+          },
+        ],
       },
       {
         path: 'consumers',
-        element: (
-          <Suspense fallback={<PageLoader />}>
-            <Consumers />
-          </Suspense>
-        ),
+        children: [
+          {
+            index: true,
+            element: (
+              <Suspense fallback={<PageLoader />}>
+                <Consumers />
+              </Suspense>
+            ),
+          },
+          {
+            path: ':id',
+            element: (
+              <Suspense fallback={<PageLoader />}>
+                <ConsumerDetail />
+              </Suspense>
+            ),
+          },
+        ],
       },
       {
         path: 'plugins',
