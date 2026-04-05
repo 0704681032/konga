@@ -381,50 +381,65 @@ const Upstreams: React.FC = () => {
                 children: (
                   <>
                     <h4>Active Health Checks</h4>
-                    <Form.Item name={['healthchecks', 'active', 'type']} label="Type">
+                    <p style={{ color: '#666', marginBottom: 16 }}>
+                      Active health checks actively probe targets for their health status.
+                    </p>
+                    <Form.Item name={['healthchecks', 'active', 'type']} label="Type" help="The protocol to use for health checks. Default: http.">
                       <Select allowClear options={[
                         { value: 'http', label: 'HTTP' },
                         { value: 'https', label: 'HTTPS' },
                         { value: 'tcp', label: 'TCP' },
                       ]} />
                     </Form.Item>
-                    <Form.Item name={['healthchecks', 'active', 'http_path']} label="HTTP Path">
+                    <Form.Item name={['healthchecks', 'active', 'http_path']} label="HTTP Path" help="The path to use in HTTP/HTTPS health check requests. Default: '/'">
                       <Input placeholder="/" />
                     </Form.Item>
-                    <Form.Item name={['healthchecks', 'active', 'timeout']} label="Timeout (seconds)">
-                      <InputNumber min={0} style={{ width: '100%' }} />
+                    <Form.Item name={['healthchecks', 'active', 'timeout']} label="Timeout (seconds)" help="Timeout for health check requests. Default: 1.">
+                      <InputNumber min={0} style={{ width: '100%' }} placeholder="1" />
                     </Form.Item>
-                    <Form.Item name={['healthchecks', 'active', 'concurrency']} label="Concurrency">
-                      <InputNumber min={1} style={{ width: '100%' }} />
+                    <Form.Item name={['healthchecks', 'active', 'concurrency']} label="Concurrency" help="Number of targets to check concurrently. Default: 10.">
+                      <InputNumber min={1} style={{ width: '100%' }} placeholder="10" />
                     </Form.Item>
-                    <Form.Item name={['healthchecks', 'active', 'https_verify_certificate']} label="Verify HTTPS Certificate" valuePropName="checked">
+                    <Form.Item name={['healthchecks', 'active', 'https_verify_certificate']} label="Verify HTTPS Certificate" help="Whether to verify SSL certificates for HTTPS health checks. Default: true." valuePropName="checked">
                       <Switch />
+                    </Form.Item>
+                    <Form.Item name={['healthchecks', 'active', 'https_sni']} label="HTTPS SNI" help="The SNI (Server Name Indication) to use for HTTPS health checks. Useful when targets are IPs.">
+                      <Input placeholder="example.com" />
                     </Form.Item>
 
                     <h5 style={{ marginTop: 16 }}>Healthy Thresholds</h5>
-                    <Form.Item name={['healthchecks', 'active', 'healthy', 'interval']} label="Interval (seconds)">
-                      <InputNumber min={0} style={{ width: '100%' }} />
+                    <Form.Item name={['healthchecks', 'active', 'healthy', 'interval']} label="Interval (seconds)" help="Interval between health checks for healthy targets. 0 disables active probes. Default: 0.">
+                      <InputNumber min={0} style={{ width: '100%' }} placeholder="0" />
                     </Form.Item>
-                    <Form.Item name={['healthchecks', 'active', 'healthy', 'successes']} label="Successes">
-                      <InputNumber min={0} style={{ width: '100%' }} />
+                    <Form.Item name={['healthchecks', 'active', 'healthy', 'successes']} label="Successes" help="Number of successful probes to consider a target healthy. Default: 0.">
+                      <InputNumber min={0} style={{ width: '100%' }} placeholder="0" />
+                    </Form.Item>
+                    <Form.Item name={['healthchecks', 'active', 'healthy', 'http_statuses']} label="HTTP Statuses" help="HTTP status codes indicating healthiness. Default: 200, 302.">
+                      <Select mode="tags" placeholder="200, 302" tokenSeparators={[',']} />
                     </Form.Item>
 
                     <h5>Unhealthy Thresholds</h5>
-                    <Form.Item name={['healthchecks', 'active', 'unhealthy', 'interval']} label="Interval (seconds)">
-                      <InputNumber min={0} style={{ width: '100%' }} />
+                    <Form.Item name={['healthchecks', 'active', 'unhealthy', 'interval']} label="Interval (seconds)" help="Interval between health checks for unhealthy targets. 0 disables active probes. Default: 0.">
+                      <InputNumber min={0} style={{ width: '100%' }} placeholder="0" />
                     </Form.Item>
-                    <Form.Item name={['healthchecks', 'active', 'unhealthy', 'http_failures']} label="HTTP Failures">
-                      <InputNumber min={0} style={{ width: '100%' }} />
+                    <Form.Item name={['healthchecks', 'active', 'unhealthy', 'http_failures']} label="HTTP Failures" help="Number of HTTP failures to consider a target unhealthy. Default: 0.">
+                      <InputNumber min={0} style={{ width: '100%' }} placeholder="0" />
                     </Form.Item>
-                    <Form.Item name={['healthchecks', 'active', 'unhealthy', 'tcp_failures']} label="TCP Failures">
-                      <InputNumber min={0} style={{ width: '100%' }} />
+                    <Form.Item name={['healthchecks', 'active', 'unhealthy', 'tcp_failures']} label="TCP Failures" help="Number of TCP failures to consider a target unhealthy. Default: 0.">
+                      <InputNumber min={0} style={{ width: '100%' }} placeholder="0" />
                     </Form.Item>
-                    <Form.Item name={['healthchecks', 'active', 'unhealthy', 'timeouts']} label="Timeouts">
-                      <InputNumber min={0} style={{ width: '100%' }} />
+                    <Form.Item name={['healthchecks', 'active', 'unhealthy', 'timeouts']} label="Timeouts" help="Number of timeouts to consider a target unhealthy. Default: 0.">
+                      <InputNumber min={0} style={{ width: '100%' }} placeholder="0" />
+                    </Form.Item>
+                    <Form.Item name={['healthchecks', 'active', 'unhealthy', 'http_statuses']} label="HTTP Statuses" help="HTTP status codes indicating unhealthiness. Default: 429, 404, 500, 501, 502, 503, 504, 505.">
+                      <Select mode="tags" placeholder="429, 404, 500, 501, 502, 503, 504, 505" tokenSeparators={[',']} />
                     </Form.Item>
 
                     <h4 style={{ marginTop: 24 }}>Passive Health Checks</h4>
-                    <Form.Item name={['healthchecks', 'passive', 'type']} label="Type">
+                    <p style={{ color: '#666', marginBottom: 16 }}>
+                      Passive health checks monitor traffic to determine target health without active probing.
+                    </p>
+                    <Form.Item name={['healthchecks', 'passive', 'type']} label="Type" help="The protocol to use for passive health checks. Default: http.">
                       <Select allowClear options={[
                         { value: 'http', label: 'HTTP' },
                         { value: 'https', label: 'HTTPS' },
@@ -433,19 +448,25 @@ const Upstreams: React.FC = () => {
                     </Form.Item>
 
                     <h5>Healthy Thresholds</h5>
-                    <Form.Item name={['healthchecks', 'passive', 'healthy', 'successes']} label="Successes">
-                      <InputNumber min={0} style={{ width: '100%' }} />
+                    <Form.Item name={['healthchecks', 'passive', 'healthy', 'successes']} label="Successes" help="Number of successful proxied requests to consider a target healthy. Default: 0.">
+                      <InputNumber min={0} style={{ width: '100%' }} placeholder="0" />
+                    </Form.Item>
+                    <Form.Item name={['healthchecks', 'passive', 'healthy', 'http_statuses']} label="HTTP Statuses" help="HTTP status codes indicating healthiness in proxied traffic. Default: 200, 201, 202, 203, 204, 205, 206, 207, 208, 226, 300, 301, 302, 303, 304, 305, 306, 307, 308.">
+                      <Select mode="tags" placeholder="200, 201, 202..." tokenSeparators={[',']} />
                     </Form.Item>
 
                     <h5>Unhealthy Thresholds</h5>
-                    <Form.Item name={['healthchecks', 'passive', 'unhealthy', 'http_failures']} label="HTTP Failures">
-                      <InputNumber min={0} style={{ width: '100%' }} />
+                    <Form.Item name={['healthchecks', 'passive', 'unhealthy', 'http_failures']} label="HTTP Failures" help="Number of HTTP failures in proxied traffic to consider a target unhealthy. Default: 0.">
+                      <InputNumber min={0} style={{ width: '100%' }} placeholder="0" />
                     </Form.Item>
-                    <Form.Item name={['healthchecks', 'passive', 'unhealthy', 'tcp_failures']} label="TCP Failures">
-                      <InputNumber min={0} style={{ width: '100%' }} />
+                    <Form.Item name={['healthchecks', 'passive', 'unhealthy', 'tcp_failures']} label="TCP Failures" help="Number of TCP failures in proxied traffic to consider a target unhealthy. Default: 0.">
+                      <InputNumber min={0} style={{ width: '100%' }} placeholder="0" />
                     </Form.Item>
-                    <Form.Item name={['healthchecks', 'passive', 'unhealthy', 'timeouts']} label="Timeouts">
-                      <InputNumber min={0} style={{ width: '100%' }} />
+                    <Form.Item name={['healthchecks', 'passive', 'unhealthy', 'timeouts']} label="Timeouts" help="Number of timeouts in proxied traffic to consider a target unhealthy. Default: 0.">
+                      <InputNumber min={0} style={{ width: '100%' }} placeholder="0" />
+                    </Form.Item>
+                    <Form.Item name={['healthchecks', 'passive', 'unhealthy', 'http_statuses']} label="HTTP Statuses" help="HTTP status codes indicating unhealthiness in proxied traffic. Default: 429, 500, 503.">
+                      <Select mode="tags" placeholder="429, 500, 503" tokenSeparators={[',']} />
                     </Form.Item>
                   </>
                 ),
