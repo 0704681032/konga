@@ -240,35 +240,35 @@ const RouteDetail: React.FC = () => {
         width={700}
       >
         <Form form={form} layout="vertical" onFinish={handleUpdate}>
-          <Form.Item name="name" label="Name">
-            <Input placeholder="Route name" />
+          <Form.Item name="name" label="Name" help="The name of the Route.">
+            <Input placeholder="my-route" />
           </Form.Item>
           <Form.Item name="tags" label="Tags">
             <TagsInput help="Optionally add tags to the route" />
           </Form.Item>
-          <Form.Item name="protocols" label="Protocols">
+          <Form.Item name="protocols" label="Protocols" help="A list of protocols this Route should allow.">
             <Select mode="multiple" options={PROTOCOLS.map(p => ({ value: p, label: p }))} />
           </Form.Item>
-          <Form.Item name="hosts" label="Hosts" help="Comma-separated domain names">
+          <Form.Item name="hosts" label="Hosts" help="A list of domain names that match this Route.">
             <Input placeholder="example.com, api.example.com" />
           </Form.Item>
-          <Form.Item name="paths" label="Paths" help="Comma-separated paths">
+          <Form.Item name="paths" label="Paths" help="A list of paths that match this Route.">
             <Input placeholder="/api, /v1/users" />
           </Form.Item>
-          <Form.Item name="methods" label="Methods" help="Comma-separated: GET, POST, PUT, DELETE">
+          <Form.Item name="methods" label="Methods" help="A list of HTTP methods that match this Route.">
             <Select mode="tags" placeholder="GET, POST" tokenSeparators={[',']} />
           </Form.Item>
-          <Form.Item name="regex_priority" label="Regex Priority">
-            <InputNumber style={{ width: '100%' }} />
+          <Form.Item name="regex_priority" label="Regex Priority" help="A number used to choose which route resolves a request when several routes match using regexes.">
+            <InputNumber style={{ width: '100%' }} placeholder="0" />
           </Form.Item>
-          <Form.Item name="strip_path" label="Strip Path" valuePropName="checked">
+          <Form.Item name="strip_path" label="Strip Path" help="Strip the matching prefix from the upstream request URL." valuePropName="checked">
             <Switch />
           </Form.Item>
-          <Form.Item name="preserve_host" label="Preserve Host" valuePropName="checked">
+          <Form.Item name="preserve_host" label="Preserve Host" help="Use the request Host header in the upstream request headers." valuePropName="checked">
             <Switch />
           </Form.Item>
-          <Form.Item name="service" label="Service ID">
-            <Input placeholder="Link to a service (optional)" />
+          <Form.Item name="service" label="Service ID" help="The Service this Route is associated to.">
+            <Input placeholder="Service UUID (optional)" />
           </Form.Item>
         </Form>
       </Modal>

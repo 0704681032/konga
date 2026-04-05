@@ -215,8 +215,8 @@ const Routes: React.FC = () => {
         width={800}
       >
         <Form form={form} layout="vertical" onFinish={handleSubmit}>
-          <Form.Item name="name" label="Name">
-            <Input placeholder="Route name" />
+          <Form.Item name="name" label="Name" help="The name of the Route.">
+            <Input placeholder="my-route" />
           </Form.Item>
 
           <Form.Item name="tags" label="Tags">
@@ -226,63 +226,63 @@ const Routes: React.FC = () => {
             />
           </Form.Item>
 
-          <Form.Item name="protocols" label="Protocols">
+          <Form.Item name="protocols" label="Protocols" help="A list of protocols this Route should allow. Default: http, https.">
             <Select mode="multiple" options={PROTOCOLS.map(p => ({ value: p, label: p }))} />
           </Form.Item>
 
-          <Form.Item name="methods" label="Methods" help="Comma-separated: GET, POST, PUT, DELETE, etc.">
+          <Form.Item name="methods" label="Methods" help="A list of HTTP methods that match this Route. At least one of hosts, paths, or methods must be set.">
             <Select mode="tags" placeholder="GET, POST, PUT" tokenSeparators={[',']} />
           </Form.Item>
 
-          <Form.Item name="hosts" label="Hosts" help="Comma-separated domain names">
+          <Form.Item name="hosts" label="Hosts" help="A list of domain names that match this Route. At least one of hosts, paths, or methods must be set.">
             <Input placeholder="example.com, api.example.com" />
           </Form.Item>
 
-          <Form.Item name="paths" label="Paths" help="Comma-separated paths">
+          <Form.Item name="paths" label="Paths" help="A list of paths that match this Route. At least one of hosts, paths, or methods must be set.">
             <Input placeholder="/api, /v1/users" />
           </Form.Item>
 
-          <Form.Item name="headers" label="Headers" help="Format: header-name:value1,value2">
+          <Form.Item name="headers" label="Headers" help="One or more lists of values indexed by header name. Format: header-name:value1,value2">
             <Input placeholder="x-custom-header:foo,bar" />
           </Form.Item>
 
-          <Form.Item name="regex_priority" label="Regex Priority">
-            <InputNumber style={{ width: '100%' }} />
+          <Form.Item name="regex_priority" label="Regex Priority" help="A number used to choose which route resolves a given request when several routes match using regexes. Default: 0.">
+            <InputNumber style={{ width: '100%' }} placeholder="0" />
           </Form.Item>
 
-          <Form.Item name="https_redirect_status_code" label="HTTPS Redirect Status Code">
-            <InputNumber min={300} max={399} style={{ width: '100%' }} />
+          <Form.Item name="https_redirect_status_code" label="HTTPS Redirect Status Code" help="The status code Kong responds with when the protocol is HTTP instead of HTTPS. Default: 426.">
+            <InputNumber min={300} max={399} style={{ width: '100%' }} placeholder="426" />
           </Form.Item>
 
-          <Form.Item name="path_handling" label="Path Handling">
+          <Form.Item name="path_handling" label="Path Handling" help="Controls how the Service path and the Route path are combined.">
             <Select allowClear options={[
               { value: 'v0', label: 'v0' },
               { value: 'v1', label: 'v1' },
             ]} />
           </Form.Item>
 
-          <Form.Item name="strip_path" label="Strip Path" valuePropName="checked">
+          <Form.Item name="strip_path" label="Strip Path" help="When matching a Route via paths, strip the matching prefix from the upstream request URL." valuePropName="checked">
             <Switch />
           </Form.Item>
 
-          <Form.Item name="preserve_host" label="Preserve Host" valuePropName="checked">
+          <Form.Item name="preserve_host" label="Preserve Host" help="When matching via hosts, use the request Host header in the upstream request headers." valuePropName="checked">
             <Switch />
           </Form.Item>
 
-          <Form.Item name="snis" label="SNIs" help="Server Name Indication for TLS routing">
+          <Form.Item name="snis" label="SNIs" help="A list of SNIs that match this Route when using stream routing.">
             <Input placeholder="example.com" />
           </Form.Item>
 
-          <Form.Item name="sources" label="Sources" help="IP sources for stream routing (ip:port)">
+          <Form.Item name="sources" label="Sources" help="A list of IP sources of incoming connections when using stream routing. Format: ip:port">
             <Input placeholder="192.168.1.1:8080, 10.0.0.0/24:3000" />
           </Form.Item>
 
-          <Form.Item name="destinations" label="Destinations" help="IP destinations for stream routing (ip:port)">
+          <Form.Item name="destinations" label="Destinations" help="A list of IP destinations of incoming connections when using stream routing. Format: ip:port">
             <Input placeholder="192.168.1.2:8080" />
           </Form.Item>
 
-          <Form.Item name="service" label="Service ID">
-            <Input placeholder="Service ID (optional)" />
+          <Form.Item name="service" label="Service ID" help="The Service this Route is associated to.">
+            <Input placeholder="Service UUID (optional)" />
           </Form.Item>
         </Form>
       </Modal>

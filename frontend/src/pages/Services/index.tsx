@@ -12,6 +12,7 @@ import { useAuthStore } from '../../stores/authStore';
 import type { KongService } from '../../types';
 import { PROTOCOLS } from '../../utils/constants';
 import TagsInput from '../../components/TagsInput';
+import axios from 'axios';
 
 const Services: React.FC = () => {
   const navigate = useNavigate();
@@ -73,8 +74,19 @@ const Services: React.FC = () => {
       await kongApi.deleteService(id);
       message.success('Service deleted');
       fetchServices();
-    } catch {
-      message.error('Failed to delete service');
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response?.data) {
+        const kongError = error.response.data;
+        if (kongError.message?.includes('routes')) {
+          message.error('Cannot delete service: it has associated routes. Delete the routes first.');
+        } else if (kongError.message?.includes('plugins')) {
+          message.error('Cannot delete service: it has associated plugins. Delete the plugins first.');
+        } else {
+          message.error(kongError.message || 'Failed to delete service');
+        }
+      } else {
+        message.error('Failed to delete service');
+      }
     }
   };
 
@@ -160,8 +172,8 @@ const Services: React.FC = () => {
         width={700}
       >
         <Form form={form} layout="vertical" onFinish={handleSubmit}>
-          <Form.Item name="name" label="Name">
-            <Input placeholder="Service name" />
+          <Form.Item name="name" label="Name" help="The service name.">
+            <Input placeholder="my-service" />
           </Form.Item>
 
           <Form.Item name="tags" label="Tags">
@@ -172,44 +184,44 @@ const Services: React.FC = () => {
           </Form.Item>
 
           {!editingService && (
-            <Form.Item name="url" label="URL" help="Shorthand to set protocol, host, port and path at once">
+            <Form.Item name="url" label="URL" help="Shorthand to set protocol, host, port and path at once. This attribute is write-only (the Admin API never returns the url).">
               <Input placeholder="http://example.com:8080/api" />
             </Form.Item>
           )}
 
-          <Form.Item name="protocol" label="Protocol">
+          <Form.Item name="protocol" label="Protocol" help="The protocol used to communicate with the upstream. It can be one of http or https.">
             <Select options={PROTOCOLS.map(p => ({ value: p, label: p }))} />
           </Form.Item>
 
-          <Form.Item name="host" label="Host" rules={[{ required: true, message: 'Host is required' }]}>
+          <Form.Item name="host" label="Host" rules={[{ required: true, message: 'Host is required' }]} help="The host of the upstream server.">
             <Input placeholder="example.com" />
           </Form.Item>
 
-          <Form.Item name="port" label="Port">
-            <InputNumber min={1} max={65535} style={{ width: '100%' }} />
+          <Form.Item name="port" label="Port" help="The upstream server port. Defaults to 80.">
+            <InputNumber min={1} max={65535} style={{ width: '100%' }} placeholder="80" />
           </Form.Item>
 
-          <Form.Item name="path" label="Path">
+          <Form.Item name="path" label="Path" help="The path to be used in requests to the upstream server. Empty by default.">
             <Input placeholder="/api" />
           </Form.Item>
 
-          <Form.Item name="retries" label="Retries">
-            <InputNumber min={0} style={{ width: '100%' }} />
+          <Form.Item name="retries" label="Retries" help="The number of retries to execute upon failure to proxy. The default is 5.">
+            <InputNumber min={0} style={{ width: '100%' }} placeholder="5" />
           </Form.Item>
 
-          <Form.Item name="connect_timeout" label="Connect Timeout (ms)">
-            <InputNumber min={0} style={{ width: '100%' }} />
+          <Form.Item name="connect_timeout" label="Connect Timeout (ms)" help="The timeout in milliseconds for establishing a connection to your upstream server. Defaults to 60000.">
+            <InputNumber min={0} style={{ width: '100%' }} placeholder="60000" />
           </Form.Item>
 
-          <Form.Item name="write_timeout" label="Write Timeout (ms)">
-            <InputNumber min={0} style={{ width: '100%' }} />
+          <Form.Item name="write_timeout" label="Write Timeout (ms)" help="The timeout in milliseconds between two successive write operations for transmitting a request. Defaults to 60000.">
+            <InputNumber min={0} style={{ width: '100%' }} placeholder="60000" />
           </Form.Item>
 
-          <Form.Item name="read_timeout" label="Read Timeout (ms)">
-            <InputNumber min={0} style={{ width: '100%' }} />
+          <Form.Item name="read_timeout" label="Read Timeout (ms)" help="The timeout in milliseconds between two successive read operations for transmitting a request. Defaults to 60000.">
+            <InputNumber min={0} style={{ width: '100%' }} placeholder="60000" />
           </Form.Item>
 
-          <Form.Item name="client_certificate" label="Client Certificate ID" help="Certificate to use for TLS handshake">
+          <Form.Item name="client_certificate" label="Client Certificate ID" help="Certificate (id) to be used as client certificate while TLS handshaking to the upstream server.">
             <Input placeholder="Certificate UUID" />
           </Form.Item>
         </Form>

@@ -330,8 +330,8 @@ const Upstreams: React.FC = () => {
         width={800}
       >
         <Form form={form} layout="vertical" onFinish={handleSubmit}>
-          <Form.Item name="name" label="Name" rules={[{ required: true }]}>
-            <Input placeholder="Upstream name" />
+          <Form.Item name="name" label="Name" rules={[{ required: true }]} help="A hostname-like name that can be referenced in the host field of a service.">
+            <Input placeholder="my-upstream" />
           </Form.Item>
 
           <Form.Item name="tags" label="Tags">
@@ -341,35 +341,35 @@ const Upstreams: React.FC = () => {
             />
           </Form.Item>
 
-          <Form.Item name="algorithm" label="Algorithm">
+          <Form.Item name="algorithm" label="Algorithm" help="The load-balancing algorithm to use. Default: round-robin.">
             <Select options={algorithmOptions} />
           </Form.Item>
 
-          <Form.Item name="slots" label="Slots">
-            <InputNumber min={10} max={65536} style={{ width: '100%' }} />
+          <Form.Item name="slots" label="Slots" help="The number of slots in the loadbalancer algorithm (10-65536). Default: 10000.">
+            <InputNumber min={10} max={65536} style={{ width: '100%' }} placeholder="10000" />
           </Form.Item>
 
-          <Form.Item name="hash_on" label="Hash On">
+          <Form.Item name="hash_on" label="Hash On" help="What to use as hashing input. Default: none (weighted-round-robin).">
             <Select options={hashOnOptions} />
           </Form.Item>
 
-          <Form.Item name="hash_fallback" label="Hash Fallback">
+          <Form.Item name="hash_fallback" label="Hash Fallback" help="What to use as hashing input if the primary hash_on does not return a hash.">
             <Select options={hashOnOptions.filter(o => o.value !== 'cookie')} />
           </Form.Item>
 
-          <Form.Item name="hash_on_header" label="Hash On Header" help="Required when hash_on is 'header'">
-            <Input placeholder="Header name" />
+          <Form.Item name="hash_on_header" label="Hash On Header" help="The header name to take the value from as hash input. Required when hash_on is 'header'.">
+            <Input placeholder="X-User-ID" />
           </Form.Item>
 
-          <Form.Item name="hash_fallback_header" label="Hash Fallback Header" help="Required when hash_fallback is 'header'">
-            <Input placeholder="Header name" />
+          <Form.Item name="hash_fallback_header" label="Hash Fallback Header" help="The header name to take the value from as hash input. Required when hash_fallback is 'header'.">
+            <Input placeholder="X-Session-ID" />
           </Form.Item>
 
-          <Form.Item name="hash_on_cookie" label="Hash On Cookie" help="Required when hash_on or hash_fallback is 'cookie'">
-            <Input placeholder="Cookie name" />
+          <Form.Item name="hash_on_cookie" label="Hash On Cookie" help="The cookie name to take the value from as hash input. Required when hash_on or hash_fallback is 'cookie'.">
+            <Input placeholder="session_id" />
           </Form.Item>
 
-          <Form.Item name="hash_on_cookie_path" label="Hash On Cookie Path">
+          <Form.Item name="hash_on_cookie_path" label="Hash On Cookie Path" help="The cookie path to set in the response headers. Default: '/'">
             <Input placeholder="/" />
           </Form.Item>
 
@@ -462,11 +462,11 @@ const Upstreams: React.FC = () => {
         onOk={() => targetForm.submit()}
       >
         <Form form={targetForm} layout="vertical" onFinish={handleTargetSubmit}>
-          <Form.Item name="target" label="Target" rules={[{ required: true }]} help="e.g., 192.168.1.1:8080">
-            <Input placeholder="host:port" />
+          <Form.Item name="target" label="Target" rules={[{ required: true }]} help="The target address (IP or hostname) with port, e.g., 192.168.1.1:8080.">
+            <Input placeholder="192.168.1.1:8080" />
           </Form.Item>
-          <Form.Item name="weight" label="Weight" rules={[{ required: true }]}>
-            <InputNumber min={0} max={1000} style={{ width: '100%' }} />
+          <Form.Item name="weight" label="Weight" rules={[{ required: true }]} help="The weight of this target relative to others in the upstream (0-1000).">
+            <InputNumber min={0} max={1000} style={{ width: '100%' }} placeholder="100" />
           </Form.Item>
         </Form>
       </Modal>

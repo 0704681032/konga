@@ -297,35 +297,35 @@ const ServiceDetail: React.FC = () => {
         width={700}
       >
         <Form form={form} layout="vertical" onFinish={handleUpdate}>
-          <Form.Item name="name" label="Name">
-            <Input placeholder="Service name" />
+          <Form.Item name="name" label="Name" help="The service name.">
+            <Input placeholder="my-service" />
           </Form.Item>
           <Form.Item name="tags" label="Tags">
             <TagsInput help="Optionally add tags to the service" />
           </Form.Item>
-          <Form.Item name="protocol" label="Protocol">
+          <Form.Item name="protocol" label="Protocol" help="The protocol used to communicate with the upstream.">
             <Select options={PROTOCOLS.map(p => ({ value: p, label: p }))} />
           </Form.Item>
-          <Form.Item name="host" label="Host" rules={[{ required: true }]}>
+          <Form.Item name="host" label="Host" rules={[{ required: true }]} help="The host of the upstream server.">
             <Input placeholder="example.com" />
           </Form.Item>
-          <Form.Item name="port" label="Port">
-            <InputNumber min={1} max={65535} style={{ width: '100%' }} />
+          <Form.Item name="port" label="Port" help="The upstream server port. Defaults to 80.">
+            <InputNumber min={1} max={65535} style={{ width: '100%' }} placeholder="80" />
           </Form.Item>
-          <Form.Item name="path" label="Path">
+          <Form.Item name="path" label="Path" help="The path to be used in requests to the upstream server.">
             <Input placeholder="/api" />
           </Form.Item>
-          <Form.Item name="retries" label="Retries">
-            <InputNumber min={0} style={{ width: '100%' }} />
+          <Form.Item name="retries" label="Retries" help="The number of retries to execute upon failure to proxy. Default is 5.">
+            <InputNumber min={0} style={{ width: '100%' }} placeholder="5" />
           </Form.Item>
-          <Form.Item name="connect_timeout" label="Connect Timeout (ms)">
-            <InputNumber min={0} style={{ width: '100%' }} />
+          <Form.Item name="connect_timeout" label="Connect Timeout (ms)" help="Timeout for establishing a connection. Default is 60000.">
+            <InputNumber min={0} style={{ width: '100%' }} placeholder="60000" />
           </Form.Item>
-          <Form.Item name="write_timeout" label="Write Timeout (ms)">
-            <InputNumber min={0} style={{ width: '100%' }} />
+          <Form.Item name="write_timeout" label="Write Timeout (ms)" help="Timeout between successive write operations. Default is 60000.">
+            <InputNumber min={0} style={{ width: '100%' }} placeholder="60000" />
           </Form.Item>
-          <Form.Item name="read_timeout" label="Read Timeout (ms)">
-            <InputNumber min={0} style={{ width: '100%' }} />
+          <Form.Item name="read_timeout" label="Read Timeout (ms)" help="Timeout between successive read operations. Default is 60000.">
+            <InputNumber min={0} style={{ width: '100%' }} placeholder="60000" />
           </Form.Item>
         </Form>
       </Modal>

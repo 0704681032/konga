@@ -142,11 +142,11 @@ const Consumers: React.FC = () => {
         onOk={() => form.submit()}
       >
         <Form form={form} layout="vertical" onFinish={handleSubmit}>
-          <Form.Item name="username" label="Username">
-            <Input placeholder="Username" />
+          <Form.Item name="username" label="Username" help="The username of the consumer. You must send either this field or custom_id with the request.">
+            <Input placeholder="my-consumer" />
           </Form.Item>
-          <Form.Item name="custom_id" label="Custom ID">
-            <Input placeholder="Custom ID" />
+          <Form.Item name="custom_id" label="Custom ID" help="Field for storing an existing ID for the consumer, useful for mapping Kong with users in your existing database.">
+            <Input placeholder="user-123" />
           </Form.Item>
           <Form.Item name="tags" label="Tags">
             <TagsInput
